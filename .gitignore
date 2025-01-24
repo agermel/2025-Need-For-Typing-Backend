@@ -1,0 +1,15 @@
+# Sensitive files
+config/config.yaml
+
+# Compiled binaries
+*.exe
+*.out
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+
+.air.toml
