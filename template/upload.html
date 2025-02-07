@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传歌曲</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>上传歌曲</h2>
+    <form id="uploadForm">
+        <div class="form-group">
+            <label for="songID">歌曲 ID:</label>
+            <input type="text" id="songID" name="song_id" placeholder="请输入歌曲 ID" required>
+        </div>
+        <div class="form-group">
+            <label for="file">选择文件:</label>
+            <input type="file" id="file" name="file" required>
+        </div>
+        <button type="submit">上传歌曲</button>
+    </form>
+
+    <div class="message" id="responseMessage" style="display: none;"></div>
+</div>
+
+<script>
+    document.getElementById("uploadForm").addEventListener("submit", function(event) {
+        event.preventDefault();  // 阻止表单提交
+
+        var formData = new FormData();
+        var songID = document.getElementById("songID").value;
+        var fileInput = document.getElementById("file");
+
+        formData.append("song_id", songID); // 添加歌曲ID
+        formData.append("file", fileInput.files[0]); // 添加文件
+
+        // 显示等待消息
+        var responseMessage = document.getElementById("responseMessage");
+        responseMessage.style.display = "none";
+
+        fetch("/api/uploadSong", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                responseMessage.style.backgroundColor = "#f8d7da";
+                responseMessage.textContent = "上传失败: " + data.error;
+            } else {
+                responseMessage.style.backgroundColor = "#d4edda";
+                responseMessage.textContent = "上传成功! 文件 ID: " + data.id;
+            }
+            responseMessage.style.display = "block";
+        })
+        .catch(error => {
+            responseMessage.style.backgroundColor = "#f8d7da";
+            responseMessage.textContent = "上传失败: " + error.message;
+            responseMessage.style.display = "block";
+        });
+    });
+</script>
+
+</body>
+</html>

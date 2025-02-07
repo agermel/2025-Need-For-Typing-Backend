@@ -7,41 +7,29 @@
         "version": "1.0"
     },
     "paths": {
-        "/api/asset": {
+        "/api/assets": {
             "get": {
-                "description": "根据 asset_id 查询资产信息",
+                "description": "查询所有素材的信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
-                    "Asset"
+                    "素材"
                 ],
-                "summary": "获取资产信息",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "资产 ID",
-                        "name": "asset_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
+                "summary": "获取所有素材",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "返回所有素材信息",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
-                    "400": {
-                        "description": "缺少 asset_id",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "资产未找到",
+                    "500": {
+                        "description": "查询失败",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -52,149 +40,45 @@
                 }
             },
             "post": {
-                "description": "提交 JSON 格式的资产信息保存到数据库",
+                "description": "上传素材文件到七牛云，需提供 asset_id 与文件内容",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Asset"
+                    "素材"
                 ],
-                "summary": "上传资产信息",
-                "parameters": [
-                    {
-                        "description": "资产信息",
-                        "name": "asset",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Asset"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "返回资产 ID",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "请求体格式错误",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "服务器错误",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/score": {
-            "post": {
-                "description": "提交用户总分信息保存到数据库",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Score"
-                ],
-                "summary": "上传总分",
-                "parameters": [
-                    {
-                        "description": "总分信息",
-                        "name": "totalScore",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.TotalScore"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "返回分数 ID",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "请求体格式错误",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "服务器错误",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/scores": {
-            "get": {
-                "description": "根据歌曲 ID 获取该歌曲的所有分数信息",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Score"
-                ],
-                "summary": "获取一首歌的所有总分信息",
+                "summary": "上传素材",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "歌曲 ID",
-                        "name": "song_id",
-                        "in": "query",
+                        "description": "素材ID",
+                        "name": "asset_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "上传的文件",
+                        "name": "file",
+                        "in": "formData",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "返回分数列表",
+                        "description": "返回素材ID和文件URL",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "additionalProperties": true
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     },
                     "400": {
-                        "description": "请求参数错误",
+                        "description": "缺少 asset_id 或文件上传失败",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -203,7 +87,7 @@
                         }
                     },
                     "500": {
-                        "description": "服务器错误",
+                        "description": "上传到七牛云失败",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -284,9 +168,52 @@
                 }
             }
         },
-        "/api/user/register": {
+        "/essay": {
+            "get": {
+                "description": "根据传入的 topic 参数，通过 gRPC 流式调用生成文章，并使用 SSE 向前端实时推送生成结果",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "文章",
+                    "SSE",
+                    "gRPC"
+                ],
+                "summary": "获取生成的文章",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "文章主题",
+                        "name": "topic",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "SSE stream of generated essay",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "内部服务器错误",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/score": {
             "post": {
-                "description": "用户注册，创建新用户并发送验证邮件",
+                "description": "接收 JSON 格式的总分数据并上传到服务器",
                 "consumes": [
                     "application/json"
                 ],
@@ -294,23 +221,23 @@
                     "application/json"
                 ],
                 "tags": [
-                    "用户管理"
+                    "分数"
                 ],
-                "summary": "用户注册接口",
+                "summary": "上传总分",
                 "parameters": [
                     {
-                        "description": "用户信息",
-                        "name": "user",
+                        "description": "上传的总分信息",
+                        "name": "totalScore",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.TotalScore"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "返回注册成功消息",
+                    "200": {
+                        "description": "返回上传成功的分数ID",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -320,29 +247,26 @@
                         "description": "请求参数错误",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "409": {
-                        "description": "用户名或邮箱已存在",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "服务器内部错误",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
             }
         },
-        "/api/user_scores": {
+        "/scores": {
             "get": {
-                "description": "根据用户 ID 获取其所有游戏中的最佳分数",
+                "description": "根据传入的 song_id 查询该歌曲所有的总分记录",
                 "consumes": [
                     "application/json"
                 ],
@@ -350,28 +274,81 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Score"
+                    "分数"
                 ],
-                "summary": "获取用户所有最佳成绩",
+                "summary": "获取歌曲所有总分信息",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "用户 ID",
-                        "name": "user_id",
+                        "description": "歌曲ID",
+                        "name": "song_id",
                         "in": "query",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "返回用户最佳成绩",
+                        "description": "返回总分信息",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "缺少用户 ID",
+                        "description": "请求参数错误",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/song": {
+            "get": {
+                "description": "根据传入的 song_id 查询歌曲信息并返回文件ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "歌曲"
+                ],
+                "summary": "获取歌曲信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "歌曲ID",
+                        "name": "song_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "返回歌曲的 file_id",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "缺少 song_id 参数",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -380,7 +357,98 @@
                         }
                     },
                     "404": {
-                        "description": "未找到用户",
+                        "description": "歌曲未找到",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "处理歌曲上传请求，将歌曲文件存储到七牛云并创建数据库记录",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "歌曲"
+                ],
+                "summary": "上传歌曲",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "歌曲ID",
+                        "name": "song_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "上传的歌曲文件",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "返回歌曲ID和文件URL",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误或文件上传失败",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "上传到七牛云失败",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/songs": {
+            "get": {
+                "description": "查询所有歌曲信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "歌曲"
+                ],
+                "summary": "获取所有歌曲",
+                "responses": {
+                    "200": {
+                        "description": "返回所有歌曲的列表",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -493,6 +561,57 @@
                 }
             }
         },
+        "/user_scores": {
+            "get": {
+                "description": "根据传入的 user_id 查询该用户所有的最佳分数记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "分数"
+                ],
+                "summary": "获取用户所有最佳成绩",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "用户ID",
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "返回用户最佳分数记录",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "用户未找到",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/ws": {
             "get": {
                 "description": "建立 WebSocket 连接并处理房间逻辑",
@@ -545,23 +664,6 @@
                 }
             }
         },
-        "models.Asset": {
-            "type": "object",
-            "properties": {
-                "file_id": {
-                    "description": "文件标识符",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "主键",
-                    "type": "integer"
-                },
-                "name": {
-                    "description": "资源名称",
-                    "type": "string"
-                }
-            }
-        },
         "models.Game": {
             "type": "object",
             "properties": {
@@ -576,19 +678,23 @@
                     }
                 },
                 "score": {
-                    "description": "外键，指向 TotalScore 表",
+                    "description": "关联 TotalScore",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.TotalScore"
                     }
                 },
                 "song": {
-                    "description": "外键，指向 Song 表",
+                    "description": "关联 Song",
                     "allOf": [
                         {
                             "$ref": "#/definitions/models.Song"
                         }
                     ]
+                },
+                "song_id": {
+                    "description": "关联 Song 的 ID",
+                    "type": "integer"
                 },
                 "time": {
                     "type": "string"

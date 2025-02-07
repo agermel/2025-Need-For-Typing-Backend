@@ -6,18 +6,6 @@ definitions:
       email:
         type: string
     type: object
-  models.Asset:
-    properties:
-      file_id:
-        description: 文件标识符
-        type: string
-      id:
-        description: 主键
-        type: integer
-      name:
-        description: 资源名称
-        type: string
-    type: object
   models.Game:
     properties:
       id:
@@ -28,14 +16,17 @@ definitions:
           $ref: '#/definitions/models.User'
         type: array
       score:
-        description: 外键，指向 TotalScore 表
+        description: 关联 TotalScore
         items:
           $ref: '#/definitions/models.TotalScore'
         type: array
       song:
         allOf:
         - $ref: '#/definitions/models.Song'
-        description: 外键，指向 Song 表
+        description: 关联 Song
+      song_id:
+        description: 关联 Song 的 ID
+        type: integer
       time:
         type: string
       user_id:
@@ -100,143 +91,67 @@ info:
   title: NeedForTyping
   version: "1.0"
 paths:
-  /api/asset:
+  /api/assets:
     get:
-      description: 根据 asset_id 查询资产信息
-      parameters:
-      - description: 资产 ID
-        in: query
-        name: asset_id
-        required: true
-        type: string
+      consumes:
+      - application/json
+      description: 查询所有素材的信息
+      produces:
+      - application/json
       responses:
         "200":
-          description: OK
+          description: 返回所有素材信息
           schema:
             additionalProperties: true
             type: object
-        "400":
-          description: 缺少 asset_id
+        "500":
+          description: 查询失败
           schema:
             additionalProperties:
               type: string
             type: object
-        "404":
-          description: 资产未找到
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: 获取资产信息
+      summary: 获取所有素材
       tags:
-      - Asset
+      - 素材
     post:
       consumes:
-      - application/json
-      description: 提交 JSON 格式的资产信息保存到数据库
+      - multipart/form-data
+      description: 上传素材文件到七牛云，需提供 asset_id 与文件内容
       parameters:
-      - description: 资产信息
-        in: body
-        name: asset
-        required: true
-        schema:
-          $ref: '#/definitions/models.Asset'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 返回资产 ID
-          schema:
-            additionalProperties:
-              type: integer
-            type: object
-        "400":
-          description: 请求体格式错误
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: 服务器错误
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: 上传资产信息
-      tags:
-      - Asset
-  /api/score:
-    post:
-      consumes:
-      - application/json
-      description: 提交用户总分信息保存到数据库
-      parameters:
-      - description: 总分信息
-        in: body
-        name: totalScore
-        required: true
-        schema:
-          $ref: '#/definitions/models.TotalScore'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 返回分数 ID
-          schema:
-            additionalProperties:
-              type: integer
-            type: object
-        "400":
-          description: 请求体格式错误
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: 服务器错误
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: 上传总分
-      tags:
-      - Score
-  /api/scores:
-    get:
-      consumes:
-      - application/json
-      description: 根据歌曲 ID 获取该歌曲的所有分数信息
-      parameters:
-      - description: 歌曲 ID
-        in: query
-        name: song_id
+      - description: 素材ID
+        in: formData
+        name: asset_id
         required: true
         type: string
+      - description: 上传的文件
+        in: formData
+        name: file
+        required: true
+        type: file
       produces:
       - application/json
       responses:
         "200":
-          description: 返回分数列表
+          description: 返回素材ID和文件URL
           schema:
-            items:
-              additionalProperties: true
-              type: object
-            type: array
+            additionalProperties:
+              type: string
+            type: object
         "400":
-          description: 请求参数错误
+          description: 缺少 asset_id 或文件上传失败
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: 服务器错误
+          description: 上传到七牛云失败
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: 获取一首歌的所有总分信息
+      summary: 上传素材
       tags:
-      - Score
+      - 素材
   /api/user/login:
     post:
       consumes:
@@ -285,78 +200,200 @@ paths:
       summary: 用户登录接口
       tags:
       - 用户管理
-  /api/user/register:
+  /essay:
+    get:
+      consumes:
+      - application/json
+      description: 根据传入的 topic 参数，通过 gRPC 流式调用生成文章，并使用 SSE 向前端实时推送生成结果
+      parameters:
+      - description: 文章主题
+        in: query
+        name: topic
+        required: true
+        type: string
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE stream of generated essay
+          schema:
+            type: string
+        "500":
+          description: 内部服务器错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 获取生成的文章
+      tags:
+      - 文章
+      - SSE
+      - gRPC
+  /score:
     post:
       consumes:
       - application/json
-      description: 用户注册，创建新用户并发送验证邮件
+      description: 接收 JSON 格式的总分数据并上传到服务器
       parameters:
-      - description: 用户信息
+      - description: 上传的总分信息
         in: body
-        name: user
+        name: totalScore
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/models.TotalScore'
       produces:
       - application/json
       responses:
-        "201":
-          description: 返回注册成功消息
+        "200":
+          description: 返回上传成功的分数ID
           schema:
             additionalProperties: true
             type: object
         "400":
           description: 请求参数错误
           schema:
-            additionalProperties: true
-            type: object
-        "409":
-          description: 用户名或邮箱已存在
-          schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "500":
           description: 服务器内部错误
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
-      summary: 用户注册接口
+      summary: 上传总分
       tags:
-      - 用户管理
-  /api/user_scores:
+      - 分数
+  /scores:
     get:
       consumes:
       - application/json
-      description: 根据用户 ID 获取其所有游戏中的最佳分数
+      description: 根据传入的 song_id 查询该歌曲所有的总分记录
       parameters:
-      - description: 用户 ID
+      - description: 歌曲ID
         in: query
-        name: user_id
+        name: song_id
         required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: 返回用户最佳成绩
+          description: 返回总分信息
           schema:
             additionalProperties: true
             type: object
         "400":
-          description: 缺少用户 ID
+          description: 请求参数错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 获取歌曲所有总分信息
+      tags:
+      - 分数
+  /song:
+    get:
+      consumes:
+      - application/json
+      description: 根据传入的 song_id 查询歌曲信息并返回文件ID
+      parameters:
+      - description: 歌曲ID
+        in: query
+        name: song_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回歌曲的 file_id
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 缺少 song_id 参数
           schema:
             additionalProperties:
               type: string
             type: object
         "404":
-          description: 未找到用户
+          description: 歌曲未找到
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: 获取用户所有最佳成绩
+      summary: 获取歌曲信息
       tags:
-      - Score
+      - 歌曲
+    post:
+      consumes:
+      - multipart/form-data
+      description: 处理歌曲上传请求，将歌曲文件存储到七牛云并创建数据库记录
+      parameters:
+      - description: 歌曲ID
+        in: formData
+        name: song_id
+        required: true
+        type: string
+      - description: 上传的歌曲文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回歌曲ID和文件URL
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 请求参数错误或文件上传失败
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 上传到七牛云失败
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 上传歌曲
+      tags:
+      - 歌曲
+  /songs:
+    get:
+      consumes:
+      - application/json
+      description: 查询所有歌曲信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回所有歌曲的列表
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 获取所有歌曲
+      tags:
+      - 歌曲
   /user/send_code:
     get:
       description: 生成并向用户邮箱发送验证码
@@ -424,6 +461,40 @@ paths:
       summary: 验证验证码
       tags:
       - Verification
+  /user_scores:
+    get:
+      consumes:
+      - application/json
+      description: 根据传入的 user_id 查询该用户所有的最佳分数记录
+      parameters:
+      - description: 用户ID
+        in: query
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回用户最佳分数记录
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 用户未找到
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 获取用户所有最佳成绩
+      tags:
+      - 分数
   /ws:
     get:
       description: 建立 WebSocket 连接并处理房间逻辑

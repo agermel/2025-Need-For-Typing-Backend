@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "./grpc/go;GenerateGrpc";
+
+service Generate{
+    rpc GenerateStream (GenerateRequest) returns (stream GenerateResponse);
+}
+
+message GenerateRequest {
+    string request = 1;
+    string topic = 2;
+}
+
+message GenerateResponse {
+    string response = 1;
+}

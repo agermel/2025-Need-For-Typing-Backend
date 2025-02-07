@@ -1,4 +1,4 @@
-package controllers
+package utils
 
 import (
 	"io/ioutil"
@@ -6,8 +6,8 @@ import (
 )
 
 // serveHTML 提供静态HTML文件
-func ServeHTML(w http.ResponseWriter, r *http.Request) {
-	data, err := ioutil.ReadFile("client.html")
+func ServeHTML(w http.ResponseWriter, r *http.Request, route string) {
+	data, err := ioutil.ReadFile(route)
 	if err != nil {
 		http.Error(w, "文件读取错误", http.StatusInternalServerError)
 		return

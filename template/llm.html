@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流式响应 Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+
+        #chat-container {
+            margin-top: 50px;
+            width: 90%;
+            max-width: 600px;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #messages {
+            height: 400px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .message {
+            margin: 10px 0;
+        }
+
+        .user {
+            text-align: right;
+            color: #007bff;
+        }
+
+        .bot {
+            text-align: left;
+            color: #28a745;
+        }
+
+        #input-container {
+            display: flex;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #send-button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #send-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <div id="input-container">
+            <input id="user-input" type="text" placeholder="输入你的消息..." />
+            <button id="send-button">发送</button>
+        </div>
+    </div>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        function addMessage(text, isUser = false) {
+            const message = document.createElement('div');
+            message.className = `message ${isUser ? 'user' : 'bot'}`;
+            message.textContent = text;
+            messagesDiv.appendChild(message);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        sendButton.addEventListener('click', () => {
+            const userMessage = userInput.value.trim();
+            if (!userMessage) return;
+
+            // 显示用户消息
+            addMessage(userMessage, true);
+
+            // 清空输入框
+            userInput.value = '';
+
+            // 开始 SSE 流式通信
+            const eventSource = new EventSource(`/api/essay?topic=${encodeURIComponent(userMessage)}`);
+
+            // 临时变量，用于拼接流式响应
+            let botResponse = '';
+
+            // 监听服务端推送的消息
+            eventSource.addEventListener('message', (event) => {
+                const { data } = event;
+
+                // 更新拼接后的响应
+                botResponse = data;
+
+                // 检查是否已有机器人消息，更新或添加
+                const existingBotMessage = document.querySelector('.message.bot:last-child');
+                if (existingBotMessage) {
+                    existingBotMessage.textContent = botResponse;
+                } else {
+                    addMessage(botResponse, false);
+                }
+            });
+
+            // 监听错误事件，关闭连接
+            eventSource.addEventListener('error', () => {
+                eventSource.close();
+            });
+        });
+
+        // 回车键触发发送
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+    </script>
+</body>
+</html>

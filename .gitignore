@@ -1,5 +1,6 @@
 # Sensitive files
 config/config.yaml
+.env
 
 # Compiled binaries
 *.exe
@@ -12,4 +13,8 @@ config/config.yaml
 # OS files
 .DS_Store
 
+# Virtual environment
+env/
+
+# Air config (for live reloading in Go)
 .air.toml

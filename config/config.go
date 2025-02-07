@@ -1,41 +1,55 @@
 package config
 
 import (
+	"fmt"
 	"log"
-	"os"
 
-	"gopkg.in/yaml.v3"
+	"github.com/spf13/viper"
 )
 
+// 配置结构体
 type Config struct {
 	Server struct {
-		Port    int    `yaml:"port"`
-		Address string `yaml:"address"`
-	} `yaml:"server"`
+		Port    int    `mapstructure:"port"`
+		Address string `mapstructure:"address"`
+	} `mapstructure:"server"`
 
 	Database struct {
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		Name     string `yaml:"name"`
-	} `yaml:"database"`
+		User     string `mapstructure:"user"`
+		Password string `mapstructure:"password"`
+		Name     string `mapstructure:"name"`
+	} `mapstructure:"database"`
 
 	Email struct {
-		Address  string `yaml:"address"`
-		Password string `yaml:"password"`
-	} `yaml:"email"`
+		Address  string `mapstructure:"address"`
+		Password string `mapstructure:"password"`
+	} `mapstructure:"email"`
+
+	ImageHost struct {
+		AccessKey string `mapstructure:"access_key"`
+		SecretKey string `mapstructure:"secret_key"`
+		Bucket    string `mapstructure:"bucket"`
+		Domain    string `mapstructure:"domain"`
+	} `mapstructure:"image_host"`
 }
 
 var AllConfig Config
 
+// 加载配置
 func LoadConfig() {
-	file, err := os.Open("config/config.yaml")
-	if err != nil {
-		log.Fatalf("Failed to load config file: %v", err)
-	}
-	defer file.Close()
+	viper.SetConfigName("config")   // 文件名
+	viper.SetConfigType("yaml")     // 文件类型
+	viper.AddConfigPath("./config") // 在 config 目录查找
 
-	decoder := yaml.NewDecoder(file)
-	if err := decoder.Decode(&AllConfig); err != nil {
-		log.Fatalf("Failed to decode config file: %v", err)
+	// 读取配置文件
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("读取配置文件失败: %v", err)
 	}
+
+	// 解析到结构体
+	if err := viper.Unmarshal(&AllConfig); err != nil {
+		log.Fatalf("解析配置文件失败: %v", err)
+	}
+
+	fmt.Println("配置加载成功！")
 }
