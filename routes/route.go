@@ -14,15 +14,16 @@ func RegisterRoutes(r *gin.Engine) {
 	songController := InitSongController()
 	assetController := InitAssetController()
 
+	userRoutes := r.Group("/user")
+	{
+		userRoutes.POST("/register", userController.Register)
+		userRoutes.POST("/login", userController.Login)
+		userRoutes.GET("/send_code", controllers.SendVerificationCode) // 发送验证码
+		userRoutes.POST("/verify_code", controllers.VerifyCode)        // 验证验证码
+	}
+
 	api := r.Group("/api")
 	{
-		userRoutes := api.Group("/user")
-		{
-			userRoutes.POST("/register", userController.Register)
-			userRoutes.POST("/login", userController.Login)
-			userRoutes.GET("/send_code", controllers.SendVerificationCode) // 发送验证码
-			userRoutes.POST("/verify_code", controllers.VerifyCode)        // 验证验证码
-		}
 		api.GET("/song", songController.GetSong) // 需要在路由上加入歌曲ID参数
 		api.POST("/song", songController.UploadSong)
 		api.GET("/all_songs", songController.GetAllSongs)
