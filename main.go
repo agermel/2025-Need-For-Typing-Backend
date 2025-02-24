@@ -3,8 +3,6 @@ package main
 import (
 	"type/config"
 	"type/database"
-	"type/middlewares"
-	"type/routes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,12 +16,20 @@ func main() {
 
 	database.InitDatabase()
 	defer database.CloseDatabase()
+	app := InitApp()
+	app.Run()
 
-	r := gin.Default()
+}
 
-	r.Use(middlewares.CORSMiddleware())
+type App struct {
+	e *gin.Engine
+}
 
-	routes.RegisterRoutes(r)
-
-	r.Run(":8888")
+func NewApp(e *gin.Engine) App {
+	return App{
+		e: e,
+	}
+}
+func (a *App) Run() {
+	a.e.Run(":8080")
 }

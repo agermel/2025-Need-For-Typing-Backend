@@ -17,6 +17,7 @@ type ScoreService struct {
 }
 
 func NewScoreService(dao dao.ScoreDAOInterface) ScoreServiceInterface {
+
 	return &ScoreService{scoreDAO: dao}
 }
 

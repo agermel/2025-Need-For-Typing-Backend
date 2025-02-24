@@ -78,6 +78,10 @@ definitions:
       password:
         description: 密码
         type: string
+      reset_token:
+        type: string
+      token_expires_at:
+        type: string
       user_id:
         description: id
         type: integer
@@ -152,54 +156,6 @@ paths:
       summary: 上传素材
       tags:
       - 素材
-  /api/user/login:
-    post:
-      consumes:
-      - application/json
-      description: 用户登录，验证用户名和密码，生成 JWT Token
-      parameters:
-      - description: 用户登录信息
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/models.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 返回登录成功消息及 JWT Token
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: 用户名或密码错误
-          schema:
-            additionalProperties: true
-            type: object
-        "403":
-          description: 邮箱未验证
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: 用户不存在
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: 服务器内部错误
-          schema:
-            additionalProperties: true
-            type: object
-      summary: 用户登录接口
-      tags:
-      - 用户管理
   /essay:
     get:
       consumes:
@@ -394,6 +350,170 @@ paths:
       summary: 获取所有歌曲
       tags:
       - 歌曲
+  /user/forget_password:
+    get:
+      consumes:
+      - application/json
+      description: 向后端发起忘记密码请求，通过邮箱发送重置密码的链接
+      parameters:
+      - description: 用户邮箱地址
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 密码重置链接已发送
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 缺少邮箱参数
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 忘记密码
+      tags:
+      - 用户管理
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录，验证用户名和密码，生成 JWT Token
+      parameters:
+      - description: 用户登录信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回登录成功消息及 JWT Token
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: 用户名或密码错误
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: 邮箱未验证
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: 用户不存在
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 用户登录接口
+      tags:
+      - 用户管理
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户注册接口，接收用户信息创建新用户
+      parameters:
+      - description: 用户注册信息
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 用户创建成功
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: 用户已存在
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 用户注册
+      tags:
+      - 用户管理
+  /user/reset_password:
+    get:
+      consumes:
+      - application/json
+      description: 提供重置密码的 token、邮箱和新密码，完成密码重置
+      parameters:
+      - description: 重置密码的 token
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: 用户邮箱
+        in: query
+        name: email
+        required: true
+        type: string
+      - description: 新的密码
+        in: query
+        name: new_password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 密码重置成功
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 缺少参数或无效的 token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 密码重置失败
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 重置密码
+      tags:
+      - 用户管理
   /user/send_code:
     get:
       description: 生成并向用户邮箱发送验证码

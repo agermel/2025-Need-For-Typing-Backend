@@ -2,24 +2,28 @@ package routes
 
 import (
 	"type/controllers"
+	"type/middlewares"
 	"type/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(r *gin.Engine) {
-	// 使用 Wire 生成的依赖
-	userController := InitUserController()
-	scoreController := InitScoreController()
-	songController := InitSongController()
-	assetController := InitAssetController()
-
+func RegisterRoutes(
+	scoreController *controllers.ScoreController,
+	userController *controllers.UserController,
+	songController *controllers.SongController,
+	assetController *controllers.AssetController,
+) *gin.Engine {
+	r := gin.Default()
+	r.Use(middlewares.CORSMiddleware())
 	userRoutes := r.Group("/user")
 	{
 		userRoutes.POST("/register", userController.Register)
 		userRoutes.POST("/login", userController.Login)
-		userRoutes.GET("/send_code", controllers.SendVerificationCode) // 发送验证码
-		userRoutes.POST("/verify_code", controllers.VerifyCode)        // 验证验证码
+		userRoutes.GET("/send_code", controllers.SendVerificationCode)    // 发送验证码
+		userRoutes.POST("/verify_code", controllers.VerifyCode)           // 验证验证码
+		userRoutes.GET("/forget_password", userController.ForgetPassword) // 发送忘记密码请求
+		userRoutes.GET("/reset_password", userController.ResetPassword)
 	}
 
 	api := r.Group("/api")
@@ -53,4 +57,6 @@ func RegisterRoutes(r *gin.Engine) {
 	r.GET("/ws", func(c *gin.Context) {
 		controllers.HandleWebSocket(c.Writer, c.Request)
 	})
+
+	return r
 }

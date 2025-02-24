@@ -4,40 +4,31 @@
 //go:build !wireinject
 // +build !wireinject
 
-package routes
+package main
 
 import (
 	"type/controllers"
 	"type/dao"
+	"type/routes"
 	"type/service"
 )
 
 // Injectors from wire.go:
 
-func InitSongController() *controllers.SongController {
-	songDAOInterface := dao.NewSongDAO()
-	songServiceInterface := service.NewSongService(songDAOInterface)
-	songController := controllers.NewSongController(songServiceInterface)
-	return songController
-}
-
-func InitScoreController() *controllers.ScoreController {
+func InitApp() App {
 	scoreDAOInterface := dao.NewScoreDAO()
 	scoreServiceInterface := service.NewScoreService(scoreDAOInterface)
 	scoreController := controllers.NewScoreController(scoreServiceInterface)
-	return scoreController
-}
-
-func InitUserController() *controllers.UserController {
 	userDAOInterface := dao.NewUserDAO()
 	userServiceInterface := service.NewUserService(userDAOInterface)
 	userController := controllers.NewUserController(userServiceInterface)
-	return userController
-}
-
-func InitAssetController() *controllers.AssetController {
+	songDAOInterface := dao.NewSongDAO()
+	songServiceInterface := service.NewSongService(songDAOInterface)
+	songController := controllers.NewSongController(songServiceInterface)
 	assetDAOInterface := dao.NewAssetDAO()
 	assetServiceInterface := service.NewAssetService(assetDAOInterface)
 	assetController := controllers.NewAssetController(assetServiceInterface)
-	return assetController
+	engine := routes.RegisterRoutes(scoreController, userController, songController, assetController)
+	app := NewApp(engine)
+	return app
 }
