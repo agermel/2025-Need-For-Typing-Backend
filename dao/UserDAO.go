@@ -16,6 +16,7 @@ type UserDAOInterface interface {
 	RequestPasswordReset(email string, token string, expiresAt time.Time) error
 	VerifyResetToken(email, token string) error
 	ResetPassword(email, newPassword string) error
+	VerifyEmail(email string) error
 }
 
 // 就是给 UserDAO 的方法的载体
@@ -76,7 +77,7 @@ func (dao *UserDAO) VerifyResetToken(email, token string) error {
 	}
 
 	if time.Now().After(user.TokenExpiresAt) {
-		return errors.New("Token 已过期")
+		return errors.New("token 已过期")
 	}
 
 	return nil
@@ -92,6 +93,18 @@ func (dao *UserDAO) ResetPassword(email, newPassword string) error {
 	user.Password = newPassword
 	user.ResetToken = ""
 	user.TokenExpiresAt = time.Time{}
+
+	return database.DB.Save(user).Error
+}
+
+// 修改邮箱是否验证为真
+func (dao *UserDAO) VerifyEmail(email string) error {
+	user, err := dao.GetUserByEmail(email)
+	if err != nil {
+		return errors.New("用户不存在")
+	}
+
+	user.EmailVerified = true
 
 	return database.DB.Save(user).Error
 }

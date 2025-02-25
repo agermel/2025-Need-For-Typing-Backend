@@ -56,14 +56,16 @@ func (service *UserService) RegisterUser(user *models.User) error {
 		return err
 	}
 
-	// 生成验证码并发送邮件
-	code := utils.GenerateRandomVerifyCode()
-	SaveCode(user.Email, code, 30*time.Minute)
+	/*
+		// 生成验证码并发送邮件
+		code := utils.GenerateRandomVerifyCode()
+		SaveCode(user.Email, code, 30*time.Minute)
 
-	if err := utils.SendMail(user.Email, "Typing_hero verification code", code); err != nil {
-		return errors.New("failed to send verification email")
-	}
+		if err := utils.SendMail(user.Email, "Typing_hero verification code", code); err != nil {
+			return errors.New("failed to send verification email")
+		}
 
+	*/
 	return nil
 }
 

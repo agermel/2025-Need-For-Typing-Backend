@@ -45,6 +45,9 @@ func (service *UserService) VerifyCode(email, code string) (*models.User, error)
 	if err != nil {
 		return nil, err
 	}
+
+	service.userDAO.VerifyEmail(email)
+
 	return user, nil
 }
 
