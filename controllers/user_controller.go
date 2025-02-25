@@ -10,6 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type VerifyToken struct {
+	Token string `json:"token"`
+}
+
 type UserController struct {
 	userService service.UserServiceInterface
 }
