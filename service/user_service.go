@@ -18,6 +18,8 @@ type UserServiceInterface interface {
 	RequestPasswordReset(email string) error
 	VerifyResetToken(email, token string) error
 	ResetPassword(email, newPassword string) error
+	VerifyToken(token string) (*models.User, error)
+	VerifyCode(email, code string) (*models.User, error)
 }
 
 // UserService 实现 UserServiceInterface
@@ -109,7 +111,7 @@ func (us *UserService) RequestPasswordReset(email string) error {
 		return errors.New("保存密码重置信息失败")
 	}
 
-	resetLink := "https://thusdaykfcv50.top/reset_password?token=" + token + "?email=" + user.Email
+	resetLink := "https://thusdaykfcv50.top/reset_password?token=" + token + "&email=" + user.Email
 	err = utils.SendMail(user.Email, "邮箱验证", "点击修改密码"+resetLink)
 	if err != nil {
 		return errors.New("发送重置邮件失败")
@@ -147,4 +149,18 @@ func (us *UserService) ResetPassword(email, newPassword string) error {
 	}
 
 	return nil
+}
+
+func (us *UserService) VerifyToken(token string) (*models.User, error) {
+	claims, err := utils.ParseToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := us.userDAO.GetUserByUsername(claims.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

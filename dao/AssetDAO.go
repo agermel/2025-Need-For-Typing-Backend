@@ -8,8 +8,8 @@ import (
 // AssetDAOInterface 定义 AssetDAO 的行为
 type AssetDAOInterface interface {
 	GetAssetByID(assetID string) (*models.Asset, error)
-	CreateAsset(asset *models.Asset) error
 	GetAllAssets() ([]models.Asset, error)
+	SaveList(assets []models.Asset) error
 }
 
 // AssetDAO 封装与素材有关的数据库操作
@@ -29,11 +29,6 @@ func (dao *AssetDAO) GetAssetByID(assetID string) (*models.Asset, error) {
 	return &asset, nil
 }
 
-// CreateAsset 将歌曲信息保存到数据库
-func (dao *AssetDAO) CreateAsset(asset *models.Asset) error {
-	return database.DB.Create(asset).Error
-}
-
 // GetAllAssets 查询所有素材
 func (dao *AssetDAO) GetAllAssets() ([]models.Asset, error) {
 	var assets []models.Asset
@@ -41,4 +36,22 @@ func (dao *AssetDAO) GetAllAssets() ([]models.Asset, error) {
 		return nil, err
 	}
 	return assets, nil
+}
+
+// SaveList 更新素材目录
+func (dao *AssetDAO) SaveList(assets []models.Asset) error {
+	if len(assets) == 0 {
+		return nil
+	}
+
+	for _, asset := range assets {
+		// 查询数据库是否已存在相同的 asset
+		result := database.DB.Where("file_id", asset.File_id).FirstOrCreate(asset)
+
+		if result.Error != nil {
+			return result.Error
+		}
+
+	}
+	return nil
 }

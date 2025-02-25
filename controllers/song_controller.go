@@ -47,45 +47,13 @@ func (sc *SongController) GetSong(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"file_id": song.File_id})
 }
 
-// UploadSong godoc
-// @Summary 上传歌曲
-// @Description 处理歌曲上传请求，将歌曲文件存储到七牛云并创建数据库记录
-// @Tags 歌曲
-// @Accept multipart/form-data
-// @Produce json
-// @Param song_id formData string true "歌曲ID"
-// @Param file formData file true "上传的歌曲文件"
-// @Success 200 {object} map[string]string "返回歌曲ID和文件URL"
-// @Failure 400 {object} map[string]string "请求参数错误或文件上传失败"
-// @Failure 500 {object} map[string]string "上传到七牛云失败"
-// @Router /song [post]
-func (sc *SongController) UploadSong(c *gin.Context) {
-	// 从请求中获取 song_id
-	songID := c.PostForm("song_id")
-	if songID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少 song_id"})
+// 更新列表
+func (sc *SongController) UpdateList(c *gin.Context) {
+	if err := sc.songService.SaveList(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新歌曲列表失败"})
 		return
+
 	}
-
-	// 获取上传的文件
-	file, header, err := c.Request.FormFile("file")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "文件上传失败"})
-		return
-	}
-	defer file.Close()
-
-	// 构造七牛云上的文件路径
-	qiniuPath := "music/" + songID
-
-	// 调用 Service 层处理上传及数据库记录创建
-	fileURL, err := sc.songService.UploadSong(songID, qiniuPath, header.Filename, file)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "上传到七牛云失败", "detail": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"id": songID, "url": fileURL})
 }
 
 // GetAllSongs godoc

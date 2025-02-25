@@ -54,7 +54,7 @@ func SendVerificationCode(c *gin.Context) {
 // @Failure      400      {object}  map[string]string  "请求体无效"
 // @Failure      401      {object}  map[string]string  "验证码无效或过期"
 // @Router       /user/verify_code [post]
-func VerifyCode(c *gin.Context) {
+func (uc *UserController) VerifyCode(c *gin.Context) {
 	var request struct {
 		Email string `json:"email"`
 		Code  string `json:"code"`
@@ -64,10 +64,11 @@ func VerifyCode(c *gin.Context) {
 		return
 	}
 
-	if service.VerifyCode(request.Email, request.Code) {
-		c.JSON(http.StatusOK, gin.H{"message": "Verification successful"})
-		service.DeleteCode(request.Email)
-	} else {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired code"})
+	user, err := uc.userService.VerifyCode(request.Email, request.Code)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
+	c.JSON(http.StatusOK, gin.H{"message": "Verification successful", "user": user.Username})
+	service.DeleteCode(request.Email)
 }

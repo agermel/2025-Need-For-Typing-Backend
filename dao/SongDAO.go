@@ -10,6 +10,7 @@ type SongDAOInterface interface {
 	GetSongByID(songID string) (*models.Song, error)
 	CreateSong(song *models.Song) error
 	GetAllSongs() ([]models.Song, error)
+	SaveList(songs []models.Song) error
 }
 
 // SongDAO 封装与歌曲相关的数据库操作
@@ -31,7 +32,14 @@ func (dao *SongDAO) GetSongByID(songID string) (*models.Song, error) {
 
 // CreateSong 将歌曲信息保存到数据库
 func (dao *SongDAO) CreateSong(song *models.Song) error {
-	return database.DB.Create(song).Error
+	// 查询数据库是否已存在相同的 song
+	result := database.DB.Where("file_id", song.File_id).FirstOrCreate(song)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
 
 // GetAllSongs 查询所有歌曲
@@ -41,4 +49,21 @@ func (dao *SongDAO) GetAllSongs() ([]models.Song, error) {
 		return nil, err
 	}
 	return songs, nil
+}
+
+func (dao *SongDAO) SaveList(songs []models.Song) error {
+	if len(songs) == 0 {
+		return nil
+	}
+
+	for _, song := range songs {
+		// 查询数据库是否已存在相同的 song
+		result := database.DB.Where("file_id", song.File_id).FirstOrCreate(song)
+
+		if result.Error != nil {
+			return result.Error
+		}
+
+	}
+	return nil
 }

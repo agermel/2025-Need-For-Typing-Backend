@@ -1,8 +1,10 @@
 package service
 
 import (
+	"errors"
 	"sync"
 	"time"
+	"type/models"
 )
 
 type VerificaitionCode struct {
@@ -31,15 +33,19 @@ func SaveCode(email, code string, ttl time.Duration) {
 	}
 }
 
-func VerifyCode(email, code string) bool {
+func (service *UserService) VerifyCode(email, code string) (*models.User, error) {
 	verificationStore.Lock()
 	defer verificationStore.Unlock()
 
 	v, exists := verificationStore.data[email]
 	if !exists || time.Now().After(v.ExpiresAt) {
-		return false // code过期了或未找到
+		return nil, errors.New("code过期或不存在") // code过期了或未找到
 	}
-	return v.Code == code // 检测code是否符合www
+	user, err := service.userDAO.GetUserByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 // DeleteCode removes a verification code after successful verification

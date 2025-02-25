@@ -47,45 +47,6 @@ func (sc *AssetController) GetAsset(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"file_id": asset.File_id})
 }
 
-// UploadAsset godoc
-// @Summary 上传素材
-// @Description 上传素材文件到七牛云，需提供 asset_id 与文件内容
-// @Tags 素材
-// @Accept multipart/form-data
-// @Produce json
-// @Param asset_id formData string true "素材ID"
-// @Param file formData file true "上传的文件"
-// @Success 200 {object} map[string]string "返回素材ID和文件URL"
-// @Failure 400 {object} map[string]string "缺少 asset_id 或文件上传失败"
-// @Failure 500 {object} map[string]string "上传到七牛云失败"
-// @Router /api/assets [post]
-func (sc *AssetController) UploadAsset(c *gin.Context) {
-	// 获取前端提交的 asset_id
-	assetID := c.PostForm("asset_id")
-	if assetID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少 asset_id"})
-		return
-	}
-
-	// 获取上传的文件
-	file, header, err := c.Request.FormFile("file")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "文件上传失败"})
-		return
-	}
-	defer file.Close()
-
-	qiniuPath := "asset/" + assetID
-
-	fileURL, err := sc.assetService.UploadAsset(assetID, qiniuPath, header.Filename, file)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "上传到七牛云失败", "detail": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"id": assetID, "url": fileURL})
-}
-
 // GetAllAssets godoc
 // @Summary 获取所有素材
 // @Description 查询所有素材的信息
@@ -102,4 +63,12 @@ func (sc *AssetController) GetAllAssets(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"assets": assets})
+}
+
+// 更新列表
+func (ac *AssetController) UpdateList(c *gin.Context) {
+	if err := ac.assetService.SaveList(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新素材列表失败"})
+		return
+	}
 }
