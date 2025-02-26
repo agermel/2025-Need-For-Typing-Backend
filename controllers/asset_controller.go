@@ -65,7 +65,15 @@ func (sc *AssetController) GetAllAssets(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"assets": assets})
 }
 
-// 更新列表
+// UpdateList godoc
+// @Summary 更新素材列表
+// @Description 更新素材列表信息
+// @Tags 素材
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]string "更新成功"
+// @Failure 500 {object} map[string]string "更新失败"
+// @Router /api/assets/update [post]
 func (ac *AssetController) UpdateList(c *gin.Context) {
 	if err := ac.assetService.SaveList(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新素材列表失败"})

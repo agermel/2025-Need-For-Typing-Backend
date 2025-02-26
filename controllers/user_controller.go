@@ -152,20 +152,3 @@ func (uc *UserController) ResetPassword(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "密码重置成功"})
 }
-
-// 验证玩家token有效性
-func (uc *UserController) VerifyToken(c *gin.Context) {
-	var verifyToken VerifyToken
-	if err := c.ShouldBindJSON(&verifyToken); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	user, err := uc.userService.VerifyToken(verifyToken.Token)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"user": user})
-}

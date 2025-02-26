@@ -6,6 +6,11 @@ definitions:
       email:
         type: string
     type: object
+  controllers.VerifyToken:
+    properties:
+      token:
+        type: string
+    type: object
   models.Game:
     properties:
       id:
@@ -117,43 +122,27 @@ paths:
       summary: 获取所有素材
       tags:
       - 素材
+  /api/assets/update:
     post:
       consumes:
-      - multipart/form-data
-      description: 上传素材文件到七牛云，需提供 asset_id 与文件内容
-      parameters:
-      - description: 素材ID
-        in: formData
-        name: asset_id
-        required: true
-        type: string
-      - description: 上传的文件
-        in: formData
-        name: file
-        required: true
-        type: file
+      - application/json
+      description: 更新素材列表信息
       produces:
       - application/json
       responses:
         "200":
-          description: 返回素材ID和文件URL
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: 缺少 asset_id 或文件上传失败
+          description: 更新成功
           schema:
             additionalProperties:
               type: string
             type: object
         "500":
-          description: 上传到七牛云失败
+          description: 更新失败
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: 上传素材
+      summary: 更新素材列表
       tags:
       - 素材
   /essay:
@@ -289,45 +278,6 @@ paths:
       summary: 获取歌曲信息
       tags:
       - 歌曲
-    post:
-      consumes:
-      - multipart/form-data
-      description: 处理歌曲上传请求，将歌曲文件存储到七牛云并创建数据库记录
-      parameters:
-      - description: 歌曲ID
-        in: formData
-        name: song_id
-        required: true
-        type: string
-      - description: 上传的歌曲文件
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 返回歌曲ID和文件URL
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: 请求参数错误或文件上传失败
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: 上传到七牛云失败
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: 上传歌曲
-      tags:
-      - 歌曲
   /songs:
     get:
       consumes:
@@ -350,6 +300,59 @@ paths:
       summary: 获取所有歌曲
       tags:
       - 歌曲
+  /songs/update:
+    post:
+      consumes:
+      - application/json
+      description: 更新歌曲列表信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 更新歌曲列表失败
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 更新歌曲列表
+      tags:
+      - 歌曲
+  /upload/token:
+    post:
+      consumes:
+      - application/json
+      description: 验证用户令牌并返回上传令牌
+      parameters:
+      - description: 用户验证令牌
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.VerifyToken'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 返回上传令牌
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 请求错误或验证失败
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 获取上传令牌
+      tags:
+      - 上传
   /user/forget_password:
     get:
       consumes:

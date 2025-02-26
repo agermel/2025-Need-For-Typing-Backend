@@ -46,11 +46,13 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/api/assets/update": {
             "post": {
-                "description": "上传素材文件到七牛云，需提供 asset_id 与文件内容",
+                "description": "更新素材列表信息",
                 "consumes": [
-                    "multipart/form-data"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -58,35 +60,10 @@ const docTemplate = `{
                 "tags": [
                     "素材"
                 ],
-                "summary": "上传素材",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "素材ID",
-                        "name": "asset_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "上传的文件",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
+                "summary": "更新素材列表",
                 "responses": {
                     "200": {
-                        "description": "返回素材ID和文件URL",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "缺少 asset_id 或文件上传失败",
+                        "description": "更新成功",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -95,7 +72,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "上传到七牛云失败",
+                        "description": "更新失败",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -304,64 +281,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "处理歌曲上传请求，将歌曲文件存储到七牛云并创建数据库记录",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "歌曲"
-                ],
-                "summary": "上传歌曲",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "歌曲ID",
-                        "name": "song_id",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "上传的歌曲文件",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "返回歌曲ID和文件URL",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误或文件上传失败",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "上传到七牛云失败",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
             }
         },
         "/songs": {
@@ -387,6 +306,87 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "服务器内部错误",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/songs/update": {
+            "post": {
+                "description": "更新歌曲列表信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "歌曲"
+                ],
+                "summary": "更新歌曲列表",
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "更新歌曲列表失败",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/upload/token": {
+            "post": {
+                "description": "验证用户令牌并返回上传令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "上传"
+                ],
+                "summary": "获取上传令牌",
+                "parameters": [
+                    {
+                        "description": "用户验证令牌",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.VerifyToken"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "返回上传令牌",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误或验证失败",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -843,6 +843,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.VerifyToken": {
+            "type": "object",
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }

@@ -47,7 +47,15 @@ func (sc *SongController) GetSong(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"file_id": song.File_id})
 }
 
-// 更新列表
+// UpdateList godoc
+// @Summary 更新歌曲列表
+// @Description 更新歌曲列表信息
+// @Tags 歌曲
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]string "更新成功"
+// @Failure 500 {object} map[string]string "更新歌曲列表失败"
+// @Router /songs/update [post]
 func (sc *SongController) UpdateList(c *gin.Context) {
 	if err := sc.songService.SaveList(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新歌曲列表失败"})
