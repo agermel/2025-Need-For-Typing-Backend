@@ -167,5 +167,5 @@ func (uc *UserController) VerifyToken(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"error": user})
+	c.JSON(http.StatusOK, gin.H{"user": user})
 }

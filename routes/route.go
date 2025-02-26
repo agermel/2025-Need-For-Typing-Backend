@@ -40,7 +40,7 @@ func RegisterRoutes(
 		api.POST("/score", scoreController.UploadTotalScore)
 		api.GET("/scores", scoreController.GetAllTotalScores)
 		api.GET("/user_scores", scoreController.GetUserAllScores)
-		api.GET("/essay", controllers.GetGeneratedEssay)
+		api.POST("/essay", userController.GetGeneratedEssay)
 	}
 
 	// 加载测试用HTML

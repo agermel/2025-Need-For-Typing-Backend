@@ -12,6 +12,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+type essayVerify struct {
+	topic string
+	token string
+}
+
 // GetGeneratedEssay godoc
 // @Summary 获取生成的文章
 // @Description 根据传入的 topic 参数，通过 gRPC 流式调用生成文章，并使用 SSE 向前端实时推送生成结果
@@ -22,14 +27,21 @@ import (
 // @Success 200 {string} string "SSE stream of generated essay"
 // @Failure 500 {object} map[string]string "内部服务器错误"
 // @Router /essay [get]
-func GetGeneratedEssay(c *gin.Context) {
-	topic := c.Query("topic")
+func (uc *UserController) GetGeneratedEssay(c *gin.Context) {
+	//	topic := c.Query("topic")
+	var essayVerify essayVerify
+	if err := c.ShouldBindJSON(&essayVerify); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-	// 设置 SSE 响应头
-	c.Writer.Header().Set("Content-Type", "text/event-stream")
-	c.Writer.Header().Set("Cache-Control", "no-cache")
-	c.Writer.Header().Set("Connection", "keep-alive")
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "*") // 允许跨域
+	_, err := uc.userService.VerifyToken(essayVerify.token)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	topic := essayVerify.topic
 
 	// c.Writer 实现了 http.ResponseWriter，可以用于 Write()、WriteHeader() 这些方法
 	// c.Writer.(http.Flusher) 试图将 c.Writer 转换为 http.Flusher 类型
