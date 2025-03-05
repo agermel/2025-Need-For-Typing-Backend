@@ -16,9 +16,10 @@ type Config struct {
 	} `mapstructure:"server"`
 
 	Database struct {
-		User     string `mapstructure:"user"`
-		Password string `mapstructure:"password"`
-		Name     string `mapstructure:"name"`
+		User          string `mapstructure:"user"`
+		Password      string `mapstructure:"password"`
+		Name          string `mapstructure:"name"`
+		RedisPassword string `mapstructure:"redispassword"`
 	} `mapstructure:"database"`
 
 	Email struct {
