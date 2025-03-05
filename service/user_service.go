@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -19,7 +20,7 @@ type UserServiceInterface interface {
 	VerifyResetToken(email, token string) error
 	ResetPassword(email, newPassword string) error
 	VerifyToken(token string) (*models.User, error)
-	VerifyCode(email, code string) (*models.User, error)
+	VerifyCode(ctx context.Context, email, code string) (*models.User, error)
 }
 
 // UserService 实现 UserServiceInterface
@@ -56,16 +57,6 @@ func (service *UserService) RegisterUser(user *models.User) error {
 		return err
 	}
 
-	/*
-		// 生成验证码并发送邮件
-		code := utils.GenerateRandomVerifyCode()
-		SaveCode(user.Email, code, 30*time.Minute)
-
-		if err := utils.SendMail(user.Email, "Typing_hero verification code", code); err != nil {
-			return errors.New("failed to send verification email")
-		}
-
-	*/
 	return nil
 }
 

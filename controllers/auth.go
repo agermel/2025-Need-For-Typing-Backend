@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -24,6 +25,10 @@ type VerifyRequest struct {
 // @Failure      500    {object}  map[string]string  "发送失败"
 // @Router       /user/send_code [get]
 func SendVerificationCode(c *gin.Context) {
+	// 创建一个带定时关闭的子上下文
+	ctx, cancel := context.WithTimeout(c, 1*time.Minute)
+	defer cancel()
+
 	email := c.Query("email")
 	if email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email is required"})
@@ -34,10 +39,13 @@ func SendVerificationCode(c *gin.Context) {
 	code := utils.GenerateRandomVerifyCode()
 
 	// 保存验证码
-	service.SaveCode(email, code, 30*time.Minute)
+	err := service.SaveCode(ctx, email, code, 30*time.Minute)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save verification code" + err.Error()})
+	}
 
 	if err := utils.SendMail(email, "This is your verifing code not junk !!!", code); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send email"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send email" + err.Error()})
 		return
 	}
 
@@ -55,6 +63,10 @@ func SendVerificationCode(c *gin.Context) {
 // @Failure      401      {object}  map[string]string  "验证码无效或过期"
 // @Router       /user/verify_code [post]
 func (uc *UserController) VerifyCode(c *gin.Context) {
+	// 创建一个带定时关闭的子上下文
+	ctx, cancel := context.WithTimeout(c, 1*time.Minute)
+	defer cancel()
+
 	var request struct {
 		Email string `json:"email"`
 		Code  string `json:"code"`
@@ -64,11 +76,10 @@ func (uc *UserController) VerifyCode(c *gin.Context) {
 		return
 	}
 
-	user, err := uc.userService.VerifyCode(request.Email, request.Code)
+	user, err := uc.userService.VerifyCode(ctx, request.Email, request.Code)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Verification successful", "user": user.Username})
-	service.DeleteCode(request.Email)
 }

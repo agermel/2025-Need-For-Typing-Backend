@@ -10,8 +10,9 @@ import (
 // 配置结构体
 type Config struct {
 	Server struct {
-		Port    int    `mapstructure:"port"`
-		Address string `mapstructure:"address"`
+		Port     int    `mapstructure:"port"`
+		Address  string `mapstructure:"address"`
+		RedisURL string `mapstructure:"redisurl"`
 	} `mapstructure:"server"`
 
 	Database struct {
