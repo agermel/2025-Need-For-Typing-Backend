@@ -8,8 +8,6 @@ import (
 	"type/models"
 )
 
-var rdb = database.NewRedis()
-
 func SaveCode(ctx context.Context, email, code string, ttl time.Duration) error {
 	err := dao.SaveCodeWithEmail(ctx, email, code, ttl, database.Rdb)
 	if err != nil {
@@ -20,7 +18,7 @@ func SaveCode(ctx context.Context, email, code string, ttl time.Duration) error 
 }
 
 func (service *UserService) VerifyCode(ctx context.Context, email, code string) (*models.User, error) {
-	err := dao.GetCodeByEmail(ctx, email, code, rdb)
+	err := dao.GetCodeByEmail(ctx, email, code, database.Rdb)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +34,7 @@ func (service *UserService) VerifyCode(ctx context.Context, email, code string) 
 		return nil, err
 	}
 
-	err = dao.DeleteCode(ctx, email, rdb)
+	err = dao.DeleteCode(ctx, email, database.Rdb)
 	if err != nil {
 		return nil, err
 	}
