@@ -15,8 +15,8 @@ var Rdb = NewRedis()
 func NewRedis() *RedisClient {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     config.AllConfig.Server.RedisURL,
-		Password: "", // 没有密码，默认值
-		DB:       0,  // 默认第0个数据库
+		Password: config.AllConfig.Database.RedisPassword,
+		DB:       0, // 默认第0个数据库
 	})
 	return &RedisClient{Client: rdb}
 }
