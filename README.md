@@ -1,6 +1,6 @@
 # Need For Typing
 
-## V1.1.0 Feature
+## V1.1.1 Feature
 
 ### 登录
 1. **注册**
