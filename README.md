@@ -29,6 +29,4 @@
 
 ### 部署指南
 ```sh
-git clone git@github.com:muxi-mini-project/2025-Need-For-Typing-Backend.git
-go mod tidy
-go run main.go
+docker-compose up -d

@@ -1,0 +1,29 @@
+# 忽略 Python 相关文件
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+
+# 忽略 Python 依赖文件
+Pipfile
+Pipfile.lock
+
+# 忽略 Docker 本地构建缓存
+*.log
+*.swp
+*.swo
+*.tmp
+.DS_Store
+
+# 忽略 Git 相关
+.git
+.gitignore
+
+# 忽略 IDE 相关
+.vscode/
+.idea/
+*.iml
+
+.air.toml

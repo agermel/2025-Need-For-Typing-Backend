@@ -1,6 +1,7 @@
 # Sensitive files
 config/config.yaml
 .env
+venv/
 
 # Compiled binaries
 *.exe

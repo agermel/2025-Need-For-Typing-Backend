@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  service-python:
+    build: 
+      context: .
+      dockerfile: Dockerfile.python
+    networks:
+      - mynetwork
+    depends_on:
+      - mysql
+      - redis
+
+  service-go:
+    build:
+      context: .
+      dockerfile: Dockerfile.golang
+    ports:
+      - "8080:8080"
+    networks:
+      - mynetwork
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: WEEdru1351.
+      MYSQL_DATABASE: database
+    networks:
+      - mynetwork
+
+  redis:
+    image: redis:latest
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
