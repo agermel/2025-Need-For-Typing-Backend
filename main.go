@@ -18,7 +18,6 @@ func main() {
 	defer database.CloseDatabase()
 	app := InitApp()
 	app.Run()
-
 }
 
 type App struct {

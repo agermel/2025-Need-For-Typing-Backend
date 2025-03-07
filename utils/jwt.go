@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -38,9 +39,11 @@ func ParseToken(tokenString string) (*Claims, error) {
 		return []byte(key), nil
 	})
 	if err != nil {
+		fmt.Println("ParseToken error:", err)
 		return nil, err
 	}
 	if !token.Valid {
+		fmt.Println("Invalid token")
 		return nil, errors.New("invalid token")
 	}
 	return claims, nil

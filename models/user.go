@@ -10,5 +10,5 @@ type User struct {
 	EmailVerified  bool      `json:"email_verified" gorm:"default:false"` // 邮箱是否验证
 	Games          []Game    `gorm:"foreignKey:UserID"`                   //
 	ResetToken     string    `json:"reset_token" gorm:"size:255"`
-	TokenExpiresAt time.Time `json:"token_expires_at"`
+	TokenExpiresAt time.Time `json:"token_expires_at" gorm:"default:null"`
 }

@@ -13,8 +13,8 @@ import (
 )
 
 type essayVerify struct {
-	topic string
-	token string
+	Topic string `json:"topic"`
+	Token string `json:"token"`
 }
 
 // GetGeneratedEssay godoc
@@ -26,7 +26,7 @@ type essayVerify struct {
 // @Param topic query string true "文章主题"
 // @Success 200 {string} string "SSE stream of generated essay"
 // @Failure 500 {object} map[string]string "内部服务器错误"
-// @Router /essay [get]
+// @Router /essay [post]
 func (uc *UserController) GetGeneratedEssay(c *gin.Context) {
 	//	topic := c.Query("topic")
 	var essayVerify essayVerify
@@ -35,13 +35,13 @@ func (uc *UserController) GetGeneratedEssay(c *gin.Context) {
 		return
 	}
 
-	_, err := uc.userService.VerifyToken(essayVerify.token)
+	_, err := uc.userService.VerifyToken(essayVerify.Token)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	topic := essayVerify.topic
+	topic := essayVerify.Topic
 
 	// c.Writer 实现了 http.ResponseWriter，可以用于 Write()、WriteHeader() 这些方法
 	// c.Writer.(http.Flusher) 试图将 c.Writer 转换为 http.Flusher 类型
