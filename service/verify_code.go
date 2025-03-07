@@ -23,13 +23,13 @@ func (service *UserService) VerifyCode(ctx context.Context, email, code string) 
 		return nil, err
 	}
 
-	user, err := service.userDAO.GetUserByEmail(email)
+	user, err := service.UserDAO.GetUserByEmail(email)
 	if err != nil {
 		return nil, err
 	}
 
 	// 标记邮箱已验证
-	err = service.userDAO.VerifyEmail(email)
+	err = service.UserDAO.VerifyEmail(email)
 	if err != nil {
 		return nil, err
 	}

@@ -25,27 +25,27 @@ type UserServiceInterface interface {
 
 // UserService 实现 UserServiceInterface
 type UserService struct {
-	userDAO dao.UserDAOInterface
+	UserDAO dao.UserDAOInterface
 }
 
 // 业务逻辑层
 // NewUserService 创建 UserService
-func NewUserService(userDAO dao.UserDAOInterface) UserServiceInterface {
+func NewUserService(UserDAO dao.UserDAOInterface) UserServiceInterface {
 	return &UserService{
-		userDAO: userDAO,
+		UserDAO: UserDAO,
 	}
 }
 
 // RegisterUser 处理用户注册逻辑
 func (service *UserService) RegisterUser(user *models.User) error {
 	// 检查用户名是否已存在
-	existingUser, _ := service.userDAO.GetUserByUsername(user.Username)
+	existingUser, _ := service.UserDAO.GetUserByUsername(user.Username)
 	if existingUser != nil {
 		return errors.New("user already exists")
 	}
 
 	// 检查邮箱是否已注册
-	existingUser, _ = service.userDAO.GetUserByEmail(user.Email)
+	existingUser, _ = service.UserDAO.GetUserByEmail(user.Email)
 	if existingUser != nil {
 		return errors.New("email already registered")
 	}
@@ -53,7 +53,7 @@ func (service *UserService) RegisterUser(user *models.User) error {
 	user.EmailVerified = false
 
 	// 创建用户
-	if err := service.userDAO.CreateUser(user); err != nil {
+	if err := service.UserDAO.CreateUser(user); err != nil {
 		return err
 	}
 
@@ -62,7 +62,7 @@ func (service *UserService) RegisterUser(user *models.User) error {
 
 // LoginUser 处理用户登录逻辑
 func (s *UserService) LoginUser(username, password string) (string, error) {
-	user, err := s.userDAO.GetUserByUsername(username)
+	user, err := s.UserDAO.GetUserByUsername(username)
 	if err != nil {
 		return "", errors.New("user not found")
 	}
@@ -87,7 +87,7 @@ func (s *UserService) LoginUser(username, password string) (string, error) {
 // RequestPasswordReset 请求密码重置
 func (us *UserService) RequestPasswordReset(email string) error {
 	// 查找用户是否存在
-	user, err := us.userDAO.GetUserByEmail(email)
+	user, err := us.UserDAO.GetUserByEmail(email)
 	if err != nil {
 		return errors.New("用户不存在")
 	}
@@ -99,7 +99,7 @@ func (us *UserService) RequestPasswordReset(email string) error {
 	expiresAt := time.Now().Add(time.Hour)
 
 	// 调用 DAO 层，保存 Token 和 过期时间
-	err = us.userDAO.RequestPasswordReset(email, token, expiresAt)
+	err = us.UserDAO.RequestPasswordReset(email, token, expiresAt)
 	if err != nil {
 		return errors.New("保存密码重置信息失败")
 	}
@@ -115,13 +115,13 @@ func (us *UserService) RequestPasswordReset(email string) error {
 
 func (us *UserService) VerifyResetToken(email, token string) error {
 	// 查找用户
-	user, err := us.userDAO.GetUserByEmail(email)
+	user, err := us.UserDAO.GetUserByEmail(email)
 	if err != nil {
 		return errors.New("用户不存在")
 	}
 
 	// 验证 token 是否匹配
-	err = us.userDAO.VerifyResetToken(user.Email, token)
+	err = us.UserDAO.VerifyResetToken(user.Email, token)
 	if err != nil {
 		return errors.New("无效的重置 token")
 	}
@@ -131,13 +131,13 @@ func (us *UserService) VerifyResetToken(email, token string) error {
 
 func (us *UserService) ResetPassword(email, newPassword string) error {
 	// 查找用户
-	user, err := us.userDAO.GetUserByEmail(email)
+	user, err := us.UserDAO.GetUserByEmail(email)
 	if err != nil {
 		return errors.New("用户不存在")
 	}
 
 	// 更新密码
-	if err := us.userDAO.ResetPassword(user.Email, newPassword); err != nil {
+	if err := us.UserDAO.ResetPassword(user.Email, newPassword); err != nil {
 		return errors.New("密码更新失败")
 	}
 
@@ -150,7 +150,7 @@ func (us *UserService) VerifyToken(token string) (*models.User, error) {
 		return nil, err
 	}
 
-	user, err := us.userDAO.GetUserByUsername(claims.Username)
+	user, err := us.UserDAO.GetUserByUsername(claims.Username)
 	if err != nil {
 		return nil, err
 	}
