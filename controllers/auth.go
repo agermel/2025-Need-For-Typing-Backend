@@ -35,6 +35,7 @@ func SendVerificationCode(c *gin.Context) {
 	err := service.SaveCode(ctx, email, code, 30*time.Minute)
 	if err != nil {
 		response.FailWithMessage("Failed to save verification code"+err.Error(), c)
+		return
 	}
 
 	if err := utils.SendMail(email, "This is your verifing code not junk !!!", code); err != nil {
@@ -50,8 +51,8 @@ func SendVerificationCode(c *gin.Context) {
 // @Tags         Verification
 // @Accept       json
 // @Produce      json
-// @Param        request  body  VerifyRequest  true  "邮箱和验证码"
-// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
+// @Param        request  body  request.VerifyRequest  true  "邮箱和验证码"
+// @Success 200 {object} response.Response{data:response.VerificationResponse} "通信成功（通过code来判断具体情况）"
 // @Router       /user/verify_code [post]
 func (uc *UserController) VerifyCode(c *gin.Context) {
 	// 创建一个带定时关闭的子上下文
@@ -62,6 +63,7 @@ func (uc *UserController) VerifyCode(c *gin.Context) {
 		Email string `json:"email"`
 		Code  string `json:"code"`
 	}
+
 	if err := c.ShouldBindJSON(&request); err != nil {
 		response.FailWithMessage("Invalid request", c)
 		return

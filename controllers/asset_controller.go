@@ -1,8 +1,7 @@
 package controllers
 
 import (
-	"net/http"
-
+	"type/api/response"
 	"type/service"
 
 	"github.com/gin-gonic/gin"
@@ -27,24 +26,25 @@ func NewAssetController(assetService service.AssetServiceInterface) *AssetContro
 // @Accept json
 // @Produce json
 // @Param asset_id query string true "素材ID"
-// @Success 200 {object} map[string]string "返回素材的 file_id"
-// @Failure 400 {object} map[string]string "缺少 asset_id"
-// @Failure 404 {object} map[string]string "未找到素材"
+// @Success 200 {object} response.Response{data:response.AssetResponse} "通信成功（通过code来判断具体情况）"
 // @Router /api/assets [get]
 func (sc *AssetController) GetAsset(c *gin.Context) {
 	assetID := c.Query("asset_id")
 	if assetID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing asset_id"})
+		response.FailWithMessage("missing asset_id", c)
 		return
 	}
 
 	asset, err := sc.assetService.GetAsset(assetID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "asset not found"})
+		response.FailWithMessage("asset not found", c)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"file_id": asset.File_id})
+	response.OKWithDetailed("Fetch asset successfully",
+		response.AssetResponse{
+			Asset_id: asset.File_id,
+		}, c)
 }
 
 // GetAllAssets godoc
@@ -53,16 +53,18 @@ func (sc *AssetController) GetAsset(c *gin.Context) {
 // @Tags 素材
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]interface{} "返回所有素材信息"
-// @Failure 500 {object} map[string]string "查询失败"
+// @Success 200 {object} response.Response{data:response.AssetsResponse{Asset_ids:[]models.Asset}} "通信成功（通过code来判断具体情况）"
 // @Router /api/assets [get]
 func (sc *AssetController) GetAllAssets(c *gin.Context) {
 	assets, err := sc.assetService.GetAllAssets()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "查询失败"})
+		response.FailWithMessage("查询失败", c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"assets": assets})
+	response.OKWithDetailed("查询成功",
+		response.AssetsResponse{
+			Asset_ids: assets,
+		}, c)
 }
 
 // UpdateList godoc
@@ -71,12 +73,12 @@ func (sc *AssetController) GetAllAssets(c *gin.Context) {
 // @Tags 素材
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]string "更新成功"
-// @Failure 500 {object} map[string]string "更新失败"
+// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
 // @Router /api/assets/update [post]
 func (ac *AssetController) UpdateList(c *gin.Context) {
 	if err := ac.assetService.SaveList(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新素材列表失败"})
+		response.FailWithMessage("更新素材列表失败", c)
 		return
 	}
+	response.OKWithMessage("update list successfully", c)
 }

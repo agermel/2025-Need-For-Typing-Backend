@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"net/http"
+	"type/api/response"
 	"type/utils"
 
 	"github.com/gin-gonic/gin"
@@ -14,26 +14,26 @@ import (
 // @Accept json
 // @Produce json
 // @Param request body VerifyToken true "用户验证令牌"
-// @Success 200 {object} map[string]string "返回上传令牌"
-// @Failure 400 {object} map[string]string "请求错误或验证失败"
+// @Success 200 {object} response.Response{data:response.UploadToken} "通信成功（通过code来判断具体情况）"
 // @Router /upload/token [post]
 func (uc *UserController) GetToken(c *gin.Context) {
 	var verifyToken VerifyToken
 	if err := c.ShouldBindJSON(&verifyToken); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
 	_, err := uc.userService.VerifyToken(verifyToken.Token)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
 	uploadToken, err := utils.GetToken()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"uploadToken": uploadToken})
+	response.OKWithDetailed("fetch upload token successfully",
+		response.UploadToken{UploadToken: uploadToken}, c)
 }

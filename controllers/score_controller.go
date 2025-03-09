@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"net/http"
+	"type/api/response"
 
 	"type/models"
 	"type/service"
@@ -28,23 +28,21 @@ func NewScoreController(service service.ScoreServiceInterface) *ScoreController 
 // @Accept json
 // @Produce json
 // @Param totalScore body models.TotalScore true "上传的总分信息"
-// @Success 200 {object} map[string]interface{} "返回上传成功的分数ID"
-// @Failure 400 {object} map[string]string "请求参数错误"
-// @Failure 500 {object} map[string]string "服务器内部错误"
+// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
 // @Router /score [post]
 func (sc *ScoreController) UploadTotalScore(c *gin.Context) {
 	var totalScore models.TotalScore
 	if err := c.ShouldBindJSON(&totalScore); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
 	if err := sc.scoreService.UploadTotalScore(&totalScore); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"score_id": totalScore.ID})
+	response.OKWithDetailed("upload total score successfully", map[string]interface{}{"score_id": totalScore.ID}, c)
 }
 
 // GetAllTotalScores godoc
@@ -61,17 +59,17 @@ func (sc *ScoreController) UploadTotalScore(c *gin.Context) {
 func (sc *ScoreController) GetAllTotalScores(c *gin.Context) {
 	songID := c.Query("song_id")
 	if songID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "song_id is required"})
+		response.FailWithMessage("song_id is required", c)
 		return
 	}
 
 	result, err := sc.scoreService.GetAllTotalScores(songID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	response.OKWithDetailed("fetch all total scores successfully", result, c)
 }
 
 // GetUserAllScores godoc
@@ -88,15 +86,15 @@ func (sc *ScoreController) GetAllTotalScores(c *gin.Context) {
 func (sc *ScoreController) GetUserAllScores(c *gin.Context) {
 	userID := c.Query("user_id")
 	if userID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing user_id"})
+		response.FailWithMessage("missing user_id", c)
 		return
 	}
 
 	result, err := sc.scoreService.GetUserAllBestScores(userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		response.FailWithMessage("user not found", c)
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	response.OKWithDetailed("fetch user all scores successfully", result, c)
 }

@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"type/api/response"
 	"type/service"
 
 	"github.com/gin-gonic/gin"
@@ -27,24 +28,25 @@ func NewSongController(service service.SongServiceInterface) *SongController {
 // @Accept json
 // @Produce json
 // @Param song_id query string true "歌曲ID"
-// @Success 200 {object} map[string]string "返回歌曲的 file_id"
-// @Failure 400 {object} map[string]string "缺少 song_id 参数"
-// @Failure 404 {object} map[string]string "歌曲未找到"
-// @Router /song [get]
+// @Success 200 {object} response.Response{data:response.SongResponse} "通信成功（通过code来判断具体情况）"
+// @Router /api/song [get]
 func (sc *SongController) GetSong(c *gin.Context) {
 	songID := c.Query("song_id")
 	if songID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing song_id"})
+		response.FailWithMessage("missing song_id", c)
 		return
 	}
 
 	song, err := sc.songService.GetSong(songID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "song not found"})
+		response.FailWithMessage("song not found", c)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"file_id": song.File_id})
+	response.OKWithDetailed("Fetch song successfully",
+		response.SongResponse{
+			Song_id: song.File_id,
+		}, c)
 }
 
 // UpdateList godoc
@@ -53,15 +55,14 @@ func (sc *SongController) GetSong(c *gin.Context) {
 // @Tags 歌曲
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]string "更新成功"
-// @Failure 500 {object} map[string]string "更新歌曲列表失败"
+// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
 // @Router /songs/update [post]
 func (sc *SongController) UpdateList(c *gin.Context) {
 	if err := sc.songService.SaveList(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新歌曲列表失败"})
+		response.FailWithMessage("更新歌曲列表失败", c)
 		return
-
 	}
+	response.OKWithMessage("update list successfully", c)
 }
 
 // GetAllSongs godoc
@@ -70,14 +71,16 @@ func (sc *SongController) UpdateList(c *gin.Context) {
 // @Tags 歌曲
 // @Accept json
 // @Produce json
-// @Success 200 {object} map[string]interface{} "返回所有歌曲的列表"
-// @Failure 500 {object} map[string]string "服务器内部错误"
-// @Router /songs [get]
+// @Success 200 {object} response.Response{data:response.SongsResponse{Song_ids:[]models.Song}} "通信成功（通过code来判断具体情况）"
+// @Router /api/update_list_song [get]
 func (sc *SongController) GetAllSongs(c *gin.Context) {
 	songs, err := sc.songService.GetAllSongs()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "查询失败"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"songs": songs})
+	response.OKWithDetailed("查询成功",
+		response.SongsResponse{
+			Song_ids: songs,
+		}, c)
 }
