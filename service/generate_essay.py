@@ -17,9 +17,9 @@ class GenerateService(llm_pb2_grpc.GenerateServicer):
     def GenerateStream(self,request,context):
         prompt = f"please write an essay about {request.topic} for 200 words in one paragraph. The generate response can only include one paragraph."
         llm = ChatOpenAI(
-            model="gpt-4o-mini",
+            model="deepseek-chat",
             openai_api_key=config("OPENAI_API_KEY"),
-            base_url="https://api.chatanywhere.tech/v1",
+            base_url="https://api.deepseek.com",
             streaming=True,
             callbacks=[StreamingStdOutCallbackHandler()]
         )

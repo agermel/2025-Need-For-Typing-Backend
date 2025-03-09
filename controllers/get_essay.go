@@ -62,7 +62,7 @@ func (uc *UserController) GetGeneratedEssay(c *gin.Context) {
 	client := GenerateGrpc.NewGenerateClient(conn)
 
 	// 设置 gRPC 调用的超时时间，防止请求长时间无响应
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*10)
 	defer cancel()
 
 	// 发送 gRPC 请求
