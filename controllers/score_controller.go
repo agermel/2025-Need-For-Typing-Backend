@@ -52,9 +52,7 @@ func (sc *ScoreController) UploadTotalScore(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param song_id query string true "歌曲ID"
-// @Success 200 {object} map[string]interface{} "返回总分信息"
-// @Failure 400 {object} map[string]string "请求参数错误"
-// @Failure 500 {object} map[string]string "服务器内部错误"
+// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
 // @Router /scores [get]
 func (sc *ScoreController) GetAllTotalScores(c *gin.Context) {
 	songID := c.Query("song_id")
@@ -79,9 +77,7 @@ func (sc *ScoreController) GetAllTotalScores(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param user_id query string true "用户ID"
-// @Success 200 {object} map[string]interface{} "返回用户最佳分数记录"
-// @Failure 400 {object} map[string]string "请求参数错误"
-// @Failure 404 {object} map[string]string "用户未找到"
+// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
 // @Router /user_scores [get]
 func (sc *ScoreController) GetUserAllScores(c *gin.Context) {
 	userID := c.Query("user_id")
