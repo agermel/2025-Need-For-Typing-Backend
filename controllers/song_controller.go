@@ -28,7 +28,7 @@ func NewSongController(service service.SongServiceInterface) *SongController {
 // @Accept json
 // @Produce json
 // @Param song_id query string true "歌曲ID"
-// @Success 200 {object} response.Response{data:response.SongResponse} "通信成功（通过code来判断具体情况）"
+// @Success 200 {object} response.Response{data=response.SongResponse} "通信成功（通过code来判断具体情况）"
 // @Router /api/song [get]
 func (sc *SongController) GetSong(c *gin.Context) {
 	songID := c.Query("song_id")
@@ -56,7 +56,7 @@ func (sc *SongController) GetSong(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
-// @Router /songs/update [post]
+// @Router /api/update_list_song [get]
 func (sc *SongController) UpdateList(c *gin.Context) {
 	if err := sc.songService.SaveList(); err != nil {
 		response.FailWithMessage("更新歌曲列表失败", c)
@@ -71,8 +71,8 @@ func (sc *SongController) UpdateList(c *gin.Context) {
 // @Tags 歌曲
 // @Accept json
 // @Produce json
-// @Success 200 {object} response.Response{data:response.SongsResponse{Song_ids:[]models.Song}} "通信成功（通过code来判断具体情况）"
-// @Router /api/update_list_song [get]
+// @Success 200 {object} response.Response{data=response.SongsResponse{Song_ids=[]models.Song}} "通信成功（通过code来判断具体情况）"
+// @Router /api/all_songs [get]
 func (sc *SongController) GetAllSongs(c *gin.Context) {
 	songs, err := sc.songService.GetAllSongs()
 	if err != nil {

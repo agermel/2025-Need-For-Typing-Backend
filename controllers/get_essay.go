@@ -24,10 +24,9 @@ type essayVerify struct {
 // @Tags 文章, SSE, gRPC
 // @Accept json
 // @Produce text/event-stream
-// @Param topic query string true "文章主题"
-// @Success 200 {string} string "SSE stream of generated essay"
-// @Failure 500 {object} map[string]string "内部服务器错误"
-// @Router /essay [post]
+// @Param user body essayVerify true "用户注册信息"
+// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
+// @Router /api/essay [post]
 func (uc *UserController) GetGeneratedEssay(c *gin.Context) {
 	//	topic := c.Query("topic")
 	var essayVerify essayVerify
@@ -57,6 +56,8 @@ func (uc *UserController) GetGeneratedEssay(c *gin.Context) {
 	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("无法连接 gRPC 服务器: %v", err)
+		response.FailWithMessage("无法连接 gRPC 服务器", c)
+		return
 	}
 	defer conn.Close()
 
@@ -78,7 +79,7 @@ func (uc *UserController) GetGeneratedEssay(c *gin.Context) {
 		if err != nil {
 			break
 		}
-		_, _ = c.Writer.Write([]byte("data: " + res.Response + "\n\n"))
+		_, _ = c.Writer.Write([]byte("data= " + res.Response + "\n\n"))
 		flusher.Flush() // 立刻推送数据到前端
 	}
 }

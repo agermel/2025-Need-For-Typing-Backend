@@ -15,3 +15,10 @@ type VerifyRequest struct {
 	Email string `json:"email"`
 	Code  string `json:"code"`
 }
+
+type ScoreRequest struct {
+	ID     uint `json:"id"`
+	UserID uint `json:"user_id"`
+	Score  int  `json:"total_score"`
+	GameID int  `json:"game_id"`
+}

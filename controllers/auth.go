@@ -52,7 +52,7 @@ func SendVerificationCode(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        request  body  request.VerifyRequest  true  "邮箱和验证码"
-// @Success 200 {object} response.Response{data:response.VerificationResponse} "通信成功（通过code来判断具体情况）"
+// @Success 200 {object} response.Response{data=response.VerificationResponse} "通信成功（通过code来判断具体情况）"
 // @Router       /user/verify_code [post]
 func (uc *UserController) VerifyCode(c *gin.Context) {
 	// 创建一个带定时关闭的子上下文

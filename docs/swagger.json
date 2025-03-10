@@ -7,7 +7,7 @@
         "version": "1.0"
     },
     "paths": {
-        "/api/assets": {
+        "/api/all_assets": {
             "get": {
                 "description": "查询所有素材的信息",
                 "consumes": [
@@ -22,27 +22,94 @@
                 "summary": "获取所有素材",
                 "responses": {
                     "200": {
-                        "description": "返回所有素材信息",
+                        "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "查询失败",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.AssetsResponse"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "Asset_ids": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/models.Asset"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
             }
         },
-        "/api/assets/update": {
-            "post": {
-                "description": "更新素材列表信息",
+        "/api/all_songs": {
+            "get": {
+                "description": "查询所有歌曲信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "歌曲"
+                ],
+                "summary": "获取所有歌曲",
+                "responses": {
+                    "200": {
+                        "description": "通信成功（通过code来判断具体情况）",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/response.SongsResponse"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "Song_ids": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "$ref": "#/definitions/models.Song"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/assetS": {
+            "get": {
+                "description": "根据传入的 asset_id 查询素材的 file_id",
                 "consumes": [
                     "application/json"
                 ],
@@ -52,30 +119,39 @@
                 "tags": [
                     "素材"
                 ],
-                "summary": "更新素材列表",
+                "summary": "获取单个素材",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "素材ID",
+                        "name": "asset_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "更新成功",
+                        "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "更新失败",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.AssetResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
             }
         },
-        "/essay": {
+        "/api/essay": {
             "post": {
                 "description": "根据传入的 topic 参数，通过 gRPC 流式调用生成文章，并使用 SSE 向前端实时推送生成结果",
                 "consumes": [
@@ -92,33 +168,72 @@
                 "summary": "获取生成的文章",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "文章主题",
-                        "name": "topic",
-                        "in": "query",
-                        "required": true
+                        "description": "用户注册信息",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.essayVerify"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "SSE stream of generated essay",
+                        "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "内部服务器错误",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
             }
         },
-        "/score": {
+        "/api/get_upload_token": {
+            "post": {
+                "description": "验证用户令牌并返回上传令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "上传"
+                ],
+                "summary": "获取上传令牌",
+                "parameters": [
+                    {
+                        "description": "用户验证令牌",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.VerifyToken"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "通信成功（通过code来判断具体情况）",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.UploadToken"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/score": {
             "post": {
                 "description": "接收 JSON 格式的总分数据并上传到服务器",
                 "consumes": [
@@ -138,34 +253,105 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.TotalScore"
+                            "$ref": "#/definitions/request.ScoreRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "返回上传成功的分数ID",
+                        "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/response.Response"
                         }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
+                    }
+                }
+            }
+        },
+        "/api/song": {
+            "get": {
+                "description": "根据传入的 song_id 查询歌曲信息并返回文件ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "歌曲"
+                ],
+                "summary": "获取歌曲信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "歌曲ID",
+                        "name": "song_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.SongResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
-                    },
-                    "500": {
-                        "description": "服务器内部错误",
+                    }
+                }
+            }
+        },
+        "/api/update_list_asset": {
+            "get": {
+                "description": "更新素材列表信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "素材"
+                ],
+                "summary": "更新素材列表",
+                "responses": {
+                    "200": {
+                        "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/update_list_song": {
+            "get": {
+                "description": "更新歌曲列表信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "歌曲"
+                ],
+                "summary": "更新歌曲列表",
+                "responses": {
+                    "200": {
+                        "description": "通信成功（通过code来判断具体情况）",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -195,36 +381,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "返回总分信息",
+                        "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "服务器内部错误",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
             }
         },
-        "/song": {
+        "/user/forget_password": {
             "get": {
-                "description": "根据传入的 song_id 查询歌曲信息并返回文件ID",
+                "description": "用户通过邮箱请求密码重置，会收到包含重置链接的邮件",
                 "consumes": [
                     "application/json"
                 ],
@@ -232,158 +399,23 @@
                     "application/json"
                 ],
                 "tags": [
-                    "歌曲"
+                    "用户管理"
                 ],
-                "summary": "获取歌曲信息",
+                "summary": "请求密码重置",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "歌曲ID",
-                        "name": "song_id",
+                        "description": "用户注册邮箱",
+                        "name": "email",
                         "in": "query",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "返回歌曲的 file_id",
+                        "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "缺少 song_id 参数",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "歌曲未找到",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/songs": {
-            "get": {
-                "description": "查询所有歌曲信息",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "歌曲"
-                ],
-                "summary": "获取所有歌曲",
-                "responses": {
-                    "200": {
-                        "description": "返回所有歌曲的列表",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "服务器内部错误",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/songs/update": {
-            "post": {
-                "description": "更新歌曲列表信息",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "歌曲"
-                ],
-                "summary": "更新歌曲列表",
-                "responses": {
-                    "200": {
-                        "description": "更新成功",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "更新歌曲列表失败",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/upload/token": {
-            "post": {
-                "description": "验证用户令牌并返回上传令牌",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "上传"
-                ],
-                "summary": "获取上传令牌",
-                "parameters": [
-                    {
-                        "description": "用户验证令牌",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.VerifyToken"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "返回上传令牌",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "请求错误或验证失败",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -457,6 +489,52 @@
                 }
             }
         },
+        "/user/reset_password": {
+            "post": {
+                "description": "用户通过邮件中提供的 token 进行密码重置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户管理"
+                ],
+                "summary": "重置密码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "密码重置令牌",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户注册邮箱",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "新密码",
+                        "name": "new_password",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "通信成功（通过code来判断具体情况）",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/send_code": {
             "get": {
                 "description": "生成并向用户邮箱发送验证码",
@@ -511,7 +589,19 @@
                     "200": {
                         "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/response.VerificationResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -541,67 +631,9 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "返回用户最佳分数记录",
+                        "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "请求参数错误",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "用户未找到",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/ws": {
-            "get": {
-                "description": "建立 WebSocket 连接并处理房间逻辑",
-                "tags": [
-                    "WebSocket"
-                ],
-                "summary": "WebSocket 连接处理",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "JWT Token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "房间 ID",
-                        "name": "room_id",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "返回房间加入信息",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "未授权",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -617,44 +649,31 @@
                 }
             }
         },
-        "models.Game": {
+        "controllers.essayVerify": {
             "type": "object",
             "properties": {
-                "id": {
-                    "description": "主键，自动递增",
-                    "type": "integer"
-                },
-                "players": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.User"
-                    }
-                },
-                "score": {
-                    "description": "关联 TotalScore",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.TotalScore"
-                    }
-                },
-                "song": {
-                    "description": "关联 Song",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Song"
-                        }
-                    ]
-                },
-                "song_id": {
-                    "description": "关联 Song 的 ID",
-                    "type": "integer"
-                },
-                "time": {
+                "token": {
                     "type": "string"
                 },
-                "user_id": {
-                    "description": "外键，指向 User 表的 ID",
+                "topic": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Asset": {
+            "type": "object",
+            "properties": {
+                "file_id": {
+                    "description": "文件标识符",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键",
                     "type": "integer"
+                },
+                "name": {
+                    "description": "资源名称",
+                    "type": "string"
                 }
             }
         },
@@ -671,69 +690,6 @@
                 },
                 "title": {
                     "description": "歌曲标题",
-                    "type": "string"
-                }
-            }
-        },
-        "models.TotalScore": {
-            "type": "object",
-            "properties": {
-                "game": {
-                    "$ref": "#/definitions/models.Game"
-                },
-                "game_id": {
-                    "description": "外键，指向 Game 表的 ID",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "主键",
-                    "type": "integer"
-                },
-                "total_score": {
-                    "description": "分值",
-                    "type": "integer"
-                },
-                "user": {
-                    "$ref": "#/definitions/models.User"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "models.User": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "description": "邮箱",
-                    "type": "string"
-                },
-                "email_verified": {
-                    "description": "邮箱是否验证",
-                    "type": "boolean"
-                },
-                "games": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Game"
-                    }
-                },
-                "password": {
-                    "description": "密码",
-                    "type": "string"
-                },
-                "reset_token": {
-                    "type": "string"
-                },
-                "token_expires_at": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "description": "id",
-                    "type": "integer"
-                },
-                "username": {
-                    "description": "用户名",
                     "type": "string"
                 }
             }
@@ -763,6 +719,23 @@
                 }
             }
         },
+        "request.ScoreRequest": {
+            "type": "object",
+            "properties": {
+                "game_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "total_score": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "request.VerifyRequest": {
             "type": "object",
             "properties": {
@@ -774,6 +747,25 @@
                 }
             }
         },
+        "response.AssetResponse": {
+            "type": "object",
+            "properties": {
+                "asset_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.AssetsResponse": {
+            "type": "object",
+            "properties": {
+                "asset_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Asset"
+                    }
+                }
+            }
+        },
         "response.Response": {
             "type": "object",
             "properties": {
@@ -781,7 +773,42 @@
                     "type": "integer"
                 },
                 "data": {},
-                "string": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.SongResponse": {
+            "type": "object",
+            "properties": {
+                "song_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.SongsResponse": {
+            "type": "object",
+            "properties": {
+                "song_ids": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Song"
+                    }
+                }
+            }
+        },
+        "response.UploadToken": {
+            "type": "object",
+            "properties": {
+                "upload_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.VerificationResponse": {
+            "type": "object",
+            "properties": {
+                "username": {
                     "type": "string"
                 }
             }

@@ -33,7 +33,7 @@ func (dao *SongDAO) GetSongByID(songID string) (*models.Song, error) {
 // CreateSong 将歌曲信息保存到数据库
 func (dao *SongDAO) CreateSong(song *models.Song) error {
 	// 查询数据库是否已存在相同的 song
-	result := database.DB.Where("file_id", song.File_id).FirstOrCreate(song)
+	result := database.DB.Where("file_id", song.File_id).FirstOrCreate(&song)
 
 	if result.Error != nil {
 		return result.Error
@@ -58,7 +58,7 @@ func (dao *SongDAO) SaveList(songs []models.Song) error {
 
 	for _, song := range songs {
 		// 查询数据库是否已存在相同的 song
-		result := database.DB.Where("file_id", song.File_id).FirstOrCreate(song)
+		result := database.DB.Where("file_id", song.File_id).FirstOrCreate(&song)
 
 		if result.Error != nil {
 			return result.Error

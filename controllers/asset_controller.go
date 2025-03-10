@@ -26,8 +26,8 @@ func NewAssetController(assetService service.AssetServiceInterface) *AssetContro
 // @Accept json
 // @Produce json
 // @Param asset_id query string true "素材ID"
-// @Success 200 {object} response.Response{data:response.AssetResponse} "通信成功（通过code来判断具体情况）"
-// @Router /api/assets [get]
+// @Success 200 {object} response.Response{data=response.AssetResponse} "通信成功（通过code来判断具体情况）"
+// @Router /api/asset [get]
 func (sc *AssetController) GetAsset(c *gin.Context) {
 	assetID := c.Query("asset_id")
 	if assetID == "" {
@@ -53,8 +53,8 @@ func (sc *AssetController) GetAsset(c *gin.Context) {
 // @Tags 素材
 // @Accept json
 // @Produce json
-// @Success 200 {object} response.Response{data:response.AssetsResponse{Asset_ids:[]models.Asset}} "通信成功（通过code来判断具体情况）"
-// @Router /api/assets [get]
+// @Success 200 {object} response.Response{data=response.AssetsResponse{Asset_ids=[]models.Asset}} "通信成功（通过code来判断具体情况）"
+// @Router /api/all_assets [get]
 func (sc *AssetController) GetAllAssets(c *gin.Context) {
 	assets, err := sc.assetService.GetAllAssets()
 	if err != nil {
@@ -74,7 +74,7 @@ func (sc *AssetController) GetAllAssets(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
-// @Router /api/assets/update [post]
+// @Router /api/update_list_asset [get]
 func (ac *AssetController) UpdateList(c *gin.Context) {
 	if err := ac.assetService.SaveList(); err != nil {
 		response.FailWithMessage("更新素材列表失败", c)

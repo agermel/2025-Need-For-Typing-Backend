@@ -46,7 +46,7 @@ func (dao *AssetDAO) SaveList(assets []models.Asset) error {
 
 	for _, asset := range assets {
 		// 查询数据库是否已存在相同的 asset
-		result := database.DB.Where("file_id", asset.File_id).FirstOrCreate(asset)
+		result := database.DB.Where("file_id", asset.File_id).FirstOrCreate(&asset)
 
 		if result.Error != nil {
 			return result.Error

@@ -118,7 +118,7 @@ func (uc *UserController) ForgetPassword(c *gin.Context) {
 // @Param email query string true "用户注册邮箱"
 // @Param new_password query string true "新密码"
 // @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
-// @Router /user/reset_password [post]
+// @Router /user/reset_password [get]
 func (uc *UserController) ResetPassword(c *gin.Context) {
 	token := c.Query("token")
 	email := c.Query("email")

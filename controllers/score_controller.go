@@ -27,9 +27,9 @@ func NewScoreController(service service.ScoreServiceInterface) *ScoreController 
 // @Tags 分数
 // @Accept json
 // @Produce json
-// @Param totalScore body models.TotalScore true "上传的总分信息"
+// @Param totalScore body request.ScoreRequest true "上传的总分信息"
 // @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
-// @Router /score [post]
+// @Router /api/score [post]
 func (sc *ScoreController) UploadTotalScore(c *gin.Context) {
 	var totalScore models.TotalScore
 	if err := c.ShouldBindJSON(&totalScore); err != nil {
