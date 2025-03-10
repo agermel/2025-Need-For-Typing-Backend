@@ -1,7 +1,6 @@
 package main
 
 import (
-	"type/config"
 	"type/database"
 
 	"github.com/gin-gonic/gin"
@@ -12,8 +11,6 @@ import (
 // @description 一个打字游戏
 
 func main() {
-	config.LoadConfig()
-
 	database.InitDatabase()
 	defer database.CloseDatabase()
 	app := InitApp()

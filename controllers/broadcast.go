@@ -6,9 +6,10 @@ import (
 	"strconv"
 	"sync"
 
-	"type/models"
+	"type/api/response"
 	"type/utils"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
@@ -21,120 +22,87 @@ var upgrader = websocket.Upgrader{
 var (
 	rooms     = make(map[string]map[*websocket.Conn]bool)
 	roomsLock = sync.Mutex{}
-	Client    models.Client
 )
 
-// @Summary      WebSocket 连接处理
-// @Description  建立 WebSocket 连接并处理房间逻辑
-// @Tags         WebSocket
-// @Param        Authorization  header   string  true  "JWT Token"
-// @Param        room_id        query    string  false "房间 ID"
-// @Success      200            {object}  map[string]interface{}  "返回房间加入信息"
-// @Failure      401            {string}  string                  "未授权"
-// @Router       /ws [get]
-func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
+// HandleWebSocket 处理 WebSocket 连接
+func HandleWebSocket(c *gin.Context) {
 	var claims *utils.Claims
 
-	// 从请求头中提取JWT
-	token := r.Header.Get("Authorization")
+	// 获取 JWT Token
+	token := c.GetHeader("Authorization")
 	if token == "" {
-		http.Error(w, "Authorization token is required", http.StatusUnauthorized)
+		response.FailWithMessage("Authorization token is required", c)
 		return
 	}
 
 	claims, err := utils.ParseToken(token)
 	if err != nil {
-		fmt.Println("Failed to fetch claims")
+		response.FailWithMessage("Invalid token", c)
 		return
 	}
 
-	Client.Username = claims.Username
-
-	roomID := r.URL.Query().Get("room_id")
-
-	// 房间号处理逻辑
+	roomID := c.Query("room_id")
 	if roomID == "" || len(rooms[roomID]) >= 2 {
-		fmt.Println("没输入房间号或房间已满，正在切换到其他房间")
 		roomID = utils.GenerateRoomID()
 		for len(rooms[roomID]) >= 2 {
 			roomID = utils.GenerateRoomID()
 		}
-
-		// 获取当前URL
-		newURL := r.URL
-
-		// 获取URL查询参数
-		query := newURL.Query()
-
-		// 更新房间号
-		query.Set("room_id", roomID)
-
-		// 设置更新后的查询参数到 URL 中
-		newURL.RawQuery = query.Encode()
-
-		http.Redirect(w, r, newURL.String(), http.StatusFound)
+		c.Redirect(http.StatusFound, fmt.Sprintf("/ws?room_id=%s", roomID))
+		return
 	}
 
-	Client.Conn, err = upgrader.Upgrade(w, r, nil)
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		fmt.Println("Failed to upgrade connection:", err)
 		return
 	}
-	defer Client.Conn.Close()
+	defer conn.Close()
 
 	roomsLock.Lock()
 	if rooms[roomID] == nil {
 		rooms[roomID] = make(map[*websocket.Conn]bool)
 	}
 	if len(rooms[roomID]) >= 2 {
-		Client.Conn.WriteJSON(map[string]string{
-			"error": "the room" + string(roomID) + " is full",
-		})
-		// 如果检测到房间满了就直接关闭client.conn
-		Client.Conn.Close()
+		conn.WriteJSON(gin.H{"error": "Room is full"})
+		conn.Close()
 	}
-	rooms[roomID][Client.Conn] = true
+	rooms[roomID][conn] = true
 	roomsLock.Unlock()
 
-	// 进入房间有json放回提示
-	Client.Conn.WriteJSON(map[string]string{
-		"Client": Client.Username,
+	conn.WriteJSON(gin.H{
+		"Client": claims.Username,
 		"status": "joined",
 	})
-	fmt.Printf("Client %s joined room %s\n", roomID, Client.Username)
+	fmt.Printf("Client %s joined room %s\n", claims.Username, roomID)
 
-	init_score := 0
+	initScore := 0
 
 	for {
-		_, score, err := Client.Conn.ReadMessage()
-		strScore := string(score)
-		intScore, _ := strconv.Atoi(strScore)
-		init_score += intScore
+		_, message, err := conn.ReadMessage()
 		if err != nil {
-			Client.Conn.WriteJSON(map[string]string{
-				"Client": Client.Username,
+			conn.WriteJSON(gin.H{
+				"Client": claims.Username,
 				"status": "exited",
 			})
+			break
 		}
+
+		intScore, _ := strconv.Atoi(string(message))
+		initScore += intScore
 
 		if len(rooms[roomID]) == 1 {
 			for conn := range rooms[roomID] {
-				conn.WriteJSON(map[string]int{
-					"1p": claims.UserID,
-				})
+				conn.WriteJSON(gin.H{"1p": claims.UserID})
 			}
-		}
-
-		if len(rooms[roomID]) == 2 {
+		} else if len(rooms[roomID]) == 2 {
 			for conn := range rooms[roomID] {
-				conn.WriteJSON(map[string]interface{}{
+				conn.WriteJSON(gin.H{
 					"1p": claims.UserID,
 					"2p": "exists",
 				})
 			}
 		}
-
-		BroadcastToRoom(roomID, init_score, claims.UserID)
+		BroadcastToRoom(roomID, initScore, claims.UserID)
 	}
 }
 
@@ -143,12 +111,10 @@ func BroadcastToRoom(roomID string, score int, userID int) {
 	defer roomsLock.Unlock()
 
 	for conn := range rooms[roomID] {
-		strScore := strconv.Itoa(score)
-		err := conn.WriteJSON(map[string]interface{}{
+		if err := conn.WriteJSON(gin.H{
 			"userID": userID,
-			"score":  strScore,
-		})
-		if err != nil {
+			"score":  strconv.Itoa(score),
+		}); err != nil {
 			fmt.Println("Failed to send score:", err)
 			conn.Close()
 			delete(rooms[roomID], conn)

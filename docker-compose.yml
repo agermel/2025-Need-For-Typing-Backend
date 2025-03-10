@@ -24,10 +24,12 @@ services:
       - redis
 
   mysql:
-    image: mysql:latest
+    image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: WEEdru1351.
       MYSQL_DATABASE: database
+    ports:
+      - "3307:3306"
     networks:
       - mynetwork
 

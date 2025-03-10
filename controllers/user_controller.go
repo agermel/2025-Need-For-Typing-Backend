@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"net/http"
 	"time"
 
 	"type/api/response"
@@ -80,8 +79,15 @@ func (uc *UserController) Login(c *gin.Context) {
 		}, c)
 }
 
-// 待修改
-
+// ForgetPassword godoc
+// @Summary 请求密码重置
+// @Description 用户通过邮箱请求密码重置，会收到包含重置链接的邮件
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Param email query string true "用户注册邮箱"
+// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
+// @Router /user/forget_password [get]
 func (uc *UserController) ForgetPassword(c *gin.Context) {
 	email := c.Query("email")
 	if email == "" {
@@ -102,27 +108,38 @@ func (uc *UserController) ForgetPassword(c *gin.Context) {
 	response.OKWithMessage("Password reset link sent", c)
 }
 
+// ResetPassword godoc
+// @Summary 重置密码
+// @Description 用户通过邮件中提供的 token 进行密码重置
+// @Tags 用户管理
+// @Accept json
+// @Produce json
+// @Param token query string true "密码重置令牌"
+// @Param email query string true "用户注册邮箱"
+// @Param new_password query string true "新密码"
+// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
+// @Router /user/reset_password [post]
 func (uc *UserController) ResetPassword(c *gin.Context) {
 	token := c.Query("token")
 	email := c.Query("email")
 	newPassword := c.Query("new_password")
 
 	if token == "" || email == "" || newPassword == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "需要token、email和newPassword"})
+		response.FailWithMessage("需要token、email和newPassword", c)
 		return
 	}
 
 	// 验证重置 token 是否有用
 	if err := uc.userService.VerifyResetToken(email, token); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的 token 或过期"})
+		response.FailWithMessage("无效的 token 或过期", c)
 		return
 	}
 
 	err := uc.userService.ResetPassword(email, newPassword)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "密码重置失败"})
+		response.FailWithMessage("密码重置失败", c)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "密码重置成功"})
+	response.OKWithMessage("密码重置成功", c)
 }

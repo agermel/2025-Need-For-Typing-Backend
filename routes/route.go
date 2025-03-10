@@ -56,7 +56,7 @@ func RegisterRoutes(
 
 	// 进入不同房间
 	r.GET("/ws", func(c *gin.Context) {
-		controllers.HandleWebSocket(c.Writer, c.Request)
+		controllers.HandleWebSocket(c)
 	})
 
 	return r

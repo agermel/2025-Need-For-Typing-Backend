@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"type/api/response"
 	GenerateGrpc "type/grpc/go"
 
 	"github.com/gin-gonic/gin"
@@ -31,13 +32,13 @@ func (uc *UserController) GetGeneratedEssay(c *gin.Context) {
 	//	topic := c.Query("topic")
 	var essayVerify essayVerify
 	if err := c.ShouldBindJSON(&essayVerify); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
 	_, err := uc.userService.VerifyToken(essayVerify.Token)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
@@ -48,7 +49,7 @@ func (uc *UserController) GetGeneratedEssay(c *gin.Context) {
 	flusher, ok := c.Writer.(http.Flusher)
 	if !ok {
 		log.Println("Streaming unsupported")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Streaming unsupported"})
+		response.FailWithMessage("Streaming unsupported", c)
 		return
 	}
 
