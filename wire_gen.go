@@ -19,8 +19,8 @@ func InitApp() App {
 	scoreDAOInterface := dao.NewScoreDAO()
 	scoreServiceInterface := service.NewScoreService(scoreDAOInterface)
 	scoreController := controllers.NewScoreController(scoreServiceInterface)
-	UserDAOInterface := dao.NewUserDAO()
-	userServiceInterface := service.NewUserService(UserDAOInterface)
+	userDAOInterface := dao.NewUserDAO()
+	userServiceInterface := service.NewUserService(userDAOInterface)
 	userController := controllers.NewUserController(userServiceInterface)
 	songDAOInterface := dao.NewSongDAO()
 	songServiceInterface := service.NewSongService(songDAOInterface)
@@ -28,7 +28,10 @@ func InitApp() App {
 	assetDAOInterface := dao.NewAssetDAO()
 	assetServiceInterface := service.NewAssetService(assetDAOInterface)
 	assetController := controllers.NewAssetController(assetServiceInterface)
-	engine := routes.RegisterRoutes(scoreController, userController, songController, assetController)
+	gameDAOInterface := dao.NewGameDAO()
+	gameServiceInterface := service.NewGameService(gameDAOInterface)
+	gameController := controllers.NewGameController(gameServiceInterface)
+	engine := routes.RegisterRoutes(scoreController, userController, songController, assetController, gameController)
 	app := NewApp(engine)
 	return app
 }

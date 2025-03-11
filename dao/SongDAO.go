@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"errors"
 	"type/database"
 	"type/models"
 )
@@ -33,10 +34,14 @@ func (dao *SongDAO) GetSongByID(songID string) (*models.Song, error) {
 // CreateSong 将歌曲信息保存到数据库
 func (dao *SongDAO) CreateSong(song *models.Song) error {
 	// 查询数据库是否已存在相同的 song
-	result := database.DB.Where("file_id", song.File_id).FirstOrCreate(&song)
+	result := database.DB.Where("file_id = ?", song.File_id).FirstOrCreate(&song)
 
 	if result.Error != nil {
 		return result.Error
+	}
+
+	if song != nil {
+		return errors.New("歌曲已存在")
 	}
 
 	return nil

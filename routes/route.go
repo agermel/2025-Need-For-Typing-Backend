@@ -13,6 +13,7 @@ func RegisterRoutes(
 	userController *controllers.UserController,
 	songController *controllers.SongController,
 	assetController *controllers.AssetController,
+	gameController *controllers.GameController,
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(middlewares.CORSMiddleware())
@@ -29,6 +30,8 @@ func RegisterRoutes(
 	api := r.Group("/api")
 	{
 		api.POST("/get_upload_token", userController.GetToken) // 获取上传token
+
+		api.POST("create_game", gameController.CreateGame)
 
 		api.GET("/song", songController.GetSong)                // 需要在路由上加入歌曲ID参数
 		api.GET("/update_list_song", songController.UpdateList) // 更新歌曲列表

@@ -44,6 +44,13 @@ type UploadToken struct {
 	UploadToken string `json:"upload_token"`
 }
 
+type BroadcastBehave struct {
+	Event  string `json:"event"`
+	UserID uint   `json:"userid"`
+	RoomID string `json:"roomid"`
+	Score  int    `json:"score"`
+}
+
 const (
 	ERROR   = 0
 	SUCCESS = 1
@@ -56,6 +63,9 @@ func Result(code int, msg string, data interface{}, c *gin.Context) {
 		data,
 	})
 }
+
+// 待定
+func WebSocketResult(Event string, UserID uint, RoomID string)
 
 func OKWithMessage(message string, c *gin.Context) {
 	Result(SUCCESS, message, map[string]interface{}{}, c)
