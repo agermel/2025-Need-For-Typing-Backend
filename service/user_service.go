@@ -19,7 +19,6 @@ type UserServiceInterface interface {
 	RequestPasswordReset(email string) error
 	VerifyResetToken(email, token string) error
 	ResetPassword(email, newPassword string) error
-	VerifyToken(token string) (*models.User, error)
 	VerifyCode(ctx context.Context, email, code string) (*models.User, error)
 }
 
@@ -142,18 +141,4 @@ func (us *UserService) ResetPassword(email, newPassword string) error {
 	}
 
 	return nil
-}
-
-func (us *UserService) VerifyToken(token string) (*models.User, error) {
-	claims, err := utils.ParseToken(token)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := us.UserDAO.GetUserByUsername(claims.Username)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
 }

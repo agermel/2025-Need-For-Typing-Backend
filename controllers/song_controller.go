@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"type/api/response"
 	"type/service"
@@ -37,7 +38,13 @@ func (sc *SongController) GetSong(c *gin.Context) {
 		return
 	}
 
-	song, err := sc.songService.GetSong(songID)
+	id, err := strconv.Atoi(songID)
+	if err != nil {
+		response.FailWithMessage("songID类型转换失败", c)
+		return
+	}
+
+	song, err := sc.songService.GetSong(id)
 	if err != nil {
 		response.FailWithMessage("song not found", c)
 		return

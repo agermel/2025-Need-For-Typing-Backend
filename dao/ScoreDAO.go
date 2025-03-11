@@ -7,8 +7,8 @@ import (
 
 type ScoreDAOInterface interface {
 	CreateTotalScore(ts *models.TotalScore) error
-	GetTotalScoresBySongID(songID string) ([]models.TotalScore, error)
-	GetUserWithGames(userID string) (*models.User, error)
+	GetTotalScoresBySongID(songID int) (*[]models.TotalScore, error)
+	GetScoresWithUserID(userID int) (*[]models.TotalScore, error)
 }
 
 type ScoreDAO struct{}
@@ -21,30 +21,33 @@ func (dao *ScoreDAO) CreateTotalScore(ts *models.TotalScore) error {
 	return database.DB.Create(ts).Error
 }
 
-func (dao *ScoreDAO) GetTotalScoresBySongID(songID string) ([]models.TotalScore, error) {
+func (dao *ScoreDAO) GetTotalScoresBySongID(songID int) (*[]models.TotalScore, error) {
 	var scores []models.TotalScore
+
 	err := database.DB.
-		Joins("JOIN games ON games.id = total_scores.game_id").
-		Where("games.song_id = ?", songID).
-		Order("total_scores.score DESC").
-		Preload("User").
-		Preload("Game.Song").
-		Find(&scores).Error
+		Where("song_id = ?", songID).
+		Order("score DESC").
+		Find(&scores).
+		Error
+
 	if err != nil {
 		return nil, err
 	}
-	return scores, nil
+
+	return &scores, nil
 }
 
-func (dao *ScoreDAO) GetUserWithGames(userID string) (*models.User, error) {
-	var user models.User
+func (dao *ScoreDAO) GetScoresWithUserID(userID int) (*[]models.TotalScore, error) {
+	var scores []models.TotalScore
+
 	err := database.DB.
-		Preload("Games.Score").
-		Preload("Games.Song").
-		Where("id = ?", userID).
-		First(&user).Error
+		Where("user_id = ?", userID).
+		Find(scores).
+		Error
+
 	if err != nil {
 		return nil, err
 	}
-	return &user, nil
+
+	return &scores, nil
 }

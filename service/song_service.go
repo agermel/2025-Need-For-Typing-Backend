@@ -7,7 +7,7 @@ import (
 )
 
 type SongServiceInterface interface {
-	GetSong(songID string) (*models.Song, error)
+	GetSong(songID int) (*models.Song, error)
 	GetAllSongs() ([]models.Song, error)
 	SaveList() error
 }
@@ -22,7 +22,7 @@ func NewSongService(dao dao.SongDAOInterface) SongServiceInterface {
 }
 
 // GetSong 获取歌曲信息
-func (s *SongService) GetSong(songID string) (*models.Song, error) {
+func (s *SongService) GetSong(songID int) (*models.Song, error) {
 	return s.songDAO.GetSongByID(songID)
 }
 

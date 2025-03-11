@@ -8,7 +8,7 @@ import (
 
 // SongDAOInterface 定义数据访问接口
 type SongDAOInterface interface {
-	GetSongByID(songID string) (*models.Song, error)
+	GetSongByID(songID int) (*models.Song, error)
 	CreateSong(song *models.Song) error
 	GetAllSongs() ([]models.Song, error)
 	SaveList(songs []models.Song) error
@@ -23,7 +23,7 @@ func NewSongDAO() SongDAOInterface {
 }
 
 // GetSongByID 根据歌曲 ID 查询歌曲信息
-func (dao *SongDAO) GetSongByID(songID string) (*models.Song, error) {
+func (dao *SongDAO) GetSongByID(songID int) (*models.Song, error) {
 	var song models.Song
 	if err := database.DB.Where("id = ?", songID).First(&song).Error; err != nil {
 		return nil, err

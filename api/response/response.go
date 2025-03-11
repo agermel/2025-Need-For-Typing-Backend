@@ -51,6 +51,14 @@ type BroadcastBehave struct {
 	Score  int    `json:"score"`
 }
 
+type ScoreReponse struct {
+	UserID   int       `json:"user_id"`
+	Username string    `json:"username"`
+	Score    int       `json:"score"`
+	Title    string    `json:"song_title"`
+	Time     time.Time `json:"time"`
+}
+
 const (
 	ERROR   = 0
 	SUCCESS = 1
@@ -65,7 +73,7 @@ func Result(code int, msg string, data interface{}, c *gin.Context) {
 }
 
 // 待定
-func WebSocketResult(Event string, UserID uint, RoomID string)
+// func WebSocketResult(Event string, UserID uint, RoomID string)
 
 func OKWithMessage(message string, c *gin.Context) {
 	Result(SUCCESS, message, map[string]interface{}{}, c)

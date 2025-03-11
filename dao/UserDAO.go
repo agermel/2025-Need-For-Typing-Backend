@@ -13,6 +13,7 @@ type UserDAOInterface interface {
 	CreateUser(user *models.User) error
 	GetUserByUsername(username string) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
+	GetUserByID(id int) (*models.User, error)
 	RequestPasswordReset(email string, token string, expiresAt time.Time) error
 	VerifyResetToken(email, token string) error
 	ResetPassword(email, newPassword string) error
@@ -46,6 +47,15 @@ func (dao *UserDAO) GetUserByUsername(username string) (*models.User, error) {
 func (dao *UserDAO) GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
 	err := database.DB.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (dao *UserDAO) GetUserByID(id int) (*models.User, error) {
+	var user models.User
+	err := database.DB.Where("id = ?", id).First(&user).Error
 	if err != nil {
 		return nil, err
 	}

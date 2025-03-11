@@ -15,20 +15,8 @@ import (
 // @Produce json
 // @Param request body VerifyToken true "用户验证令牌"
 // @Success 200 {object} response.Response{data=response.UploadToken} "通信成功（通过code来判断具体情况）"
-// @Router /api/get_upload_token [post]
+// @Router /api/get_upload_token [get]
 func (uc *UserController) GetToken(c *gin.Context) {
-	var verifyToken VerifyToken
-	if err := c.ShouldBindJSON(&verifyToken); err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-
-	_, err := uc.userService.VerifyToken(verifyToken.Token)
-	if err != nil {
-		response.FailWithMessage(err.Error(), c)
-		return
-	}
-
 	uploadToken, err := utils.GetToken()
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)

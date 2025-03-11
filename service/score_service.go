@@ -1,24 +1,31 @@
 package service
 
 import (
+	"time"
+	"type/api/response"
 	"type/dao"
 	"type/models"
 )
 
 type ScoreServiceInterface interface {
 	UploadTotalScore(ts *models.TotalScore) error
-	GetAllTotalScores(songID string) ([]map[string]interface{}, error)
-	GetUserAllBestScores(userID string) (map[string]interface{}, error)
+	GetAllTotalScores(songID int) ([]response.ScoreReponse, error)
+	GetUserAllBestScores(userID int) ([]response.ScoreReponse, error)
 }
 
 // ScoreService 封装与分数相关的业务逻辑
 type ScoreService struct {
 	scoreDAO dao.ScoreDAOInterface
+	userDAO  dao.UserDAOInterface
+	songDAO  dao.SongDAOInterface
 }
 
-func NewScoreService(dao dao.ScoreDAOInterface) ScoreServiceInterface {
-
-	return &ScoreService{scoreDAO: dao}
+func NewScoreService(scoreDAO dao.ScoreDAOInterface,
+	userDAO dao.UserDAOInterface,
+	songDAO dao.SongDAOInterface) ScoreServiceInterface {
+	return &ScoreService{scoreDAO: scoreDAO,
+		userDAO: userDAO,
+		songDAO: songDAO}
 }
 
 // UploadTotalScore 处理上传总分的业务逻辑
@@ -27,54 +34,76 @@ func (s *ScoreService) UploadTotalScore(totalScore *models.TotalScore) error {
 }
 
 // GetAllTotalScores 根据歌曲 ID 获取所有总分信息，并整理成结果数据
-func (s *ScoreService) GetAllTotalScores(songID string) ([]map[string]interface{}, error) {
-	scores, err := s.scoreDAO.GetTotalScoresBySongID(songID)
+func (s *ScoreService) GetAllTotalScores(songid int) ([]response.ScoreReponse, error) {
+	scores, err := s.scoreDAO.GetTotalScoresBySongID(songid)
 	if err != nil {
-		return nil, err
+		return []response.ScoreReponse{}, err
 	}
-	var result []map[string]interface{}
-	for _, score := range scores {
-		result = append(result, map[string]interface{}{
-			"user_id":    score.UserID,
-			"username":   score.User.Username,
-			"score":      score.Score,
-			"song_title": score.Game.Song.Title,
-			"time":       score.Game.Time,
+
+	song, err := s.songDAO.GetSongByID(songid)
+	if err != nil {
+		return []response.ScoreReponse{}, err
+	}
+
+	var result []response.ScoreReponse
+	for _, score := range *scores {
+
+		user, err := s.userDAO.GetUserByID(score.UserID)
+		if err != nil {
+			return []response.ScoreReponse{}, err
+		}
+
+		result = append(result, response.ScoreReponse{
+			UserID:   score.UserID,
+			Username: user.Username,
+			Score:    score.Score,
+			Title:    song.Title,
+			Time:     score.CreatedAT,
 		})
 	}
 	return result, nil
 }
 
-// GetUserAllBestScores 根据用户 ID 获取用户所有游戏中的最佳成绩
-func (s *ScoreService) GetUserAllBestScores(userID string) (map[string]interface{}, error) {
-	user, err := s.scoreDAO.GetUserWithGames(userID)
+// GetUserAllBestScores 根据用户 ID 获取用户所有已游玩过的歌曲中的最佳成绩
+func (s *ScoreService) GetUserAllBestScores(userID int) ([]response.ScoreReponse, error) {
+	var bestScoresMap = make(map[int]int)
+	var bestScoresMaptime = make(map[int]time.Time)
+	var bestScores []response.ScoreReponse
+
+	// 获取该用户的所有成绩
+	scores, err := s.scoreDAO.GetScoresWithUserID(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	var bestScores []map[string]interface{}
-	// 遍历用户的每场游戏，提取每场游戏中最高的分数
-	for _, game := range user.Games {
-		if len(game.Score) > 0 {
-			bestScore := game.Score[0]
-			for _, score := range game.Score {
-				if score.Score > bestScore.Score {
-					bestScore = score
-				}
-			}
-			bestScores = append(bestScores, map[string]interface{}{
-				"game_id":    game.ID,
-				"song_title": game.Song.Title,
-				"score":      bestScore.Score,
-				"time":       game.Time,
-			})
+	for _, score := range *scores {
+		// 如果当前 songID 还没有记录，或者当前分数比已存的高，则更新
+		if maxScore, exists := bestScoresMap[score.SongID]; !exists || score.Score > maxScore {
+			bestScoresMap[score.SongID] = score.Score
+			bestScoresMaptime[score.SongID] = score.CreatedAT
 		}
 	}
 
-	result := map[string]interface{}{
-		"user_id":     user.ID,
-		"username":    user.Username,
-		"best_scores": bestScores,
+	user, err := s.userDAO.GetUserByID(userID)
+	if err != nil {
+		return nil, err
 	}
-	return result, nil
+
+	// 转换为结构体
+	for songID, maxScore := range bestScoresMap {
+		song, err := s.songDAO.GetSongByID(songID)
+		if err != nil {
+			return nil, err
+		}
+
+		bestScores = append(bestScores, response.ScoreReponse{
+			UserID:   userID,
+			Username: user.Username,
+			Score:    maxScore,
+			Title:    song.Title,
+			Time:     bestScoresMaptime[songID],
+		})
+	}
+
+	return bestScores, nil
 }

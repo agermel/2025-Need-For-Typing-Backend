@@ -13,7 +13,6 @@ func RegisterRoutes(
 	userController *controllers.UserController,
 	songController *controllers.SongController,
 	assetController *controllers.AssetController,
-	gameController *controllers.GameController,
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(middlewares.CORSMiddleware())
@@ -28,10 +27,9 @@ func RegisterRoutes(
 	}
 
 	api := r.Group("/api")
+	api.Use(middlewares.JWTAuthMiddleware())
 	{
-		api.POST("/get_upload_token", userController.GetToken) // 获取上传token
-
-		api.POST("create_game", gameController.CreateGame)
+		api.GET("/get_upload_token", userController.GetToken) // 获取上传token
 
 		api.GET("/song", songController.GetSong)                // 需要在路由上加入歌曲ID参数
 		api.GET("/update_list_song", songController.UpdateList) // 更新歌曲列表
@@ -43,7 +41,7 @@ func RegisterRoutes(
 		api.POST("/score", scoreController.UploadTotalScore)
 		api.GET("/scores", scoreController.GetAllTotalScores)
 		api.GET("/user_scores", scoreController.GetUserAllScores)
-		api.POST("/essay", userController.GetGeneratedEssay)
+		api.GET("/essay", userController.GetGeneratedEssay)
 	}
 
 	// 加载测试用HTML

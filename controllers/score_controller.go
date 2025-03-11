@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"strconv"
+	"time"
 	"type/api/response"
 
 	"type/models"
@@ -32,17 +34,30 @@ func NewScoreController(service service.ScoreServiceInterface) *ScoreController 
 // @Router /api/score [post]
 func (sc *ScoreController) UploadTotalScore(c *gin.Context) {
 	var totalScore models.TotalScore
+	userID, exists := c.Get("userID")
+	if !exists {
+		response.FailWithMessage("Token Error", c)
+	}
+
 	if err := c.ShouldBindJSON(&totalScore); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
+
+	id, ok := userID.(int)
+	if !ok {
+		response.FailWithMessage("userID 断言失败", c)
+	}
+	totalScore.UserID = id
+
+	totalScore.CreatedAT = time.Now()
 
 	if err := sc.scoreService.UploadTotalScore(&totalScore); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
-	response.OKWithDetailed("upload total score successfully", map[string]interface{}{"score_id": totalScore.ID}, c)
+	response.OKWithMessage("upload total score successfully", c)
 }
 
 // GetAllTotalScores godoc
@@ -61,7 +76,13 @@ func (sc *ScoreController) GetAllTotalScores(c *gin.Context) {
 		return
 	}
 
-	result, err := sc.scoreService.GetAllTotalScores(songID)
+	id, err := strconv.Atoi(songID)
+	if err != nil {
+		response.FailWithMessage("songID类型转换失败", c)
+		return
+	}
+
+	result, err := sc.scoreService.GetAllTotalScores(id)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -86,11 +107,17 @@ func (sc *ScoreController) GetUserAllScores(c *gin.Context) {
 		return
 	}
 
-	result, err := sc.scoreService.GetUserAllBestScores(userID)
+	id, err := strconv.Atoi(userID)
+	if err != nil {
+		response.FailWithMessage("userID类型转换失败", c)
+		return
+	}
+
+	result, err := sc.scoreService.GetUserAllBestScores(id)
 	if err != nil {
 		response.FailWithMessage("user not found", c)
 		return
 	}
 
-	response.OKWithDetailed("fetch user all scores successfully", result, c)
+	response.OKWithDetailed("fetch user all scores per song successfully", result, c)
 }
