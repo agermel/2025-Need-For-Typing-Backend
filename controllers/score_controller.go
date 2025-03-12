@@ -67,8 +67,8 @@ func (sc *ScoreController) UploadTotalScore(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param song_id query string true "歌曲ID"
-// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
-// @Router /scores [get]
+// @Success 200 {object} response.Response{data=[]response.ScoreReponse} "通信成功（通过code来判断具体情况）"
+// @Router /api/scores [get]
 func (sc *ScoreController) GetAllTotalScores(c *gin.Context) {
 	songID := c.Query("song_id")
 	if songID == "" {
@@ -98,8 +98,8 @@ func (sc *ScoreController) GetAllTotalScores(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param user_id query string true "用户ID"
-// @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
-// @Router /user_scores [get]
+// @Success 200 {object} response.Response{data=[]response.ScoreReponse} "通信成功（通过code来判断具体情况）"
+// @Router /api/user_scores [get]
 func (sc *ScoreController) GetUserAllScores(c *gin.Context) {
 	userID := c.Query("user_id")
 	if userID == "" {

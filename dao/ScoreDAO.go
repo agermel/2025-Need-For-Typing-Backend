@@ -42,7 +42,7 @@ func (dao *ScoreDAO) GetScoresWithUserID(userID int) (*[]models.TotalScore, erro
 
 	err := database.DB.
 		Where("user_id = ?", userID).
-		Find(scores).
+		Find(&scores).
 		Error
 
 	if err != nil {

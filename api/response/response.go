@@ -45,8 +45,9 @@ type UploadToken struct {
 }
 
 type BroadcastBehave struct {
+	Code   int    `json:"code"`
 	Event  string `json:"event"`
-	UserID uint   `json:"userid"`
+	UserID int    `json:"userid"`
 	RoomID string `json:"roomid"`
 	Score  int    `json:"score"`
 }
@@ -60,8 +61,11 @@ type ScoreReponse struct {
 }
 
 const (
-	ERROR   = 0
-	SUCCESS = 1
+	ERROR            = 0
+	SUCCESS          = 1
+	NEW_PLAYER_ENTER = 30001
+	PLAYER_EXIT      = 30002
+	UPDATE_SCORE     = 20001
 )
 
 func Result(code int, msg string, data interface{}, c *gin.Context) {

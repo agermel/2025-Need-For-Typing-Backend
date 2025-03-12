@@ -21,33 +21,35 @@ var upgrader = websocket.Upgrader{
 
 var (
 	rooms     = make(map[string]map[*websocket.Conn]bool)
+	scores    = make(map[string]map[int]int) // 存储房间内玩家得分
 	roomsLock = sync.Mutex{}
 )
 
-// HandleWebSocket 处理 WebSocket 连接
 func HandleWebSocket(c *gin.Context) {
-	var claims *utils.Claims
-
-	// 获取 JWT Token
-	token := c.GetHeader("Authorization")
-	if token == "" {
-		response.FailWithMessage("Authorization token is required", c)
+	userID, exists := c.Get("userID")
+	if !exists {
+		response.FailWithMessage("Token Error", c)
 		return
 	}
 
-	claims, err := utils.ParseToken(token)
-	if err != nil {
-		response.FailWithMessage("Invalid token", c)
+	id, ok := userID.(int)
+	if !ok {
+		response.FailWithMessage("userID 断言失败", c)
 		return
 	}
 
 	roomID := c.Query("room_id")
-	if roomID == "" || len(rooms[roomID]) >= 2 {
+	if roomID == "" {
 		roomID = utils.GenerateRoomID()
 		for len(rooms[roomID]) >= 2 {
 			roomID = utils.GenerateRoomID()
 		}
 		c.Redirect(http.StatusFound, fmt.Sprintf("/ws?room_id=%s", roomID))
+		return
+	}
+
+	if len(rooms[roomID]) >= 2 {
+		response.FailWithMessage("Room is full", c)
 		return
 	}
 
@@ -61,61 +63,86 @@ func HandleWebSocket(c *gin.Context) {
 	roomsLock.Lock()
 	if rooms[roomID] == nil {
 		rooms[roomID] = make(map[*websocket.Conn]bool)
-	}
-	if len(rooms[roomID]) >= 2 {
-		conn.WriteJSON(gin.H{"error": "Room is full"})
-		conn.Close()
+		scores[roomID] = make(map[int]int) // 初始化房间分数记录
 	}
 	rooms[roomID][conn] = true
+	if _, exists := scores[roomID][id]; !exists {
+		scores[roomID][id] = 0 // 初始化玩家分数
+	}
 	roomsLock.Unlock()
 
-	conn.WriteJSON(gin.H{
-		"Client": claims.Username,
-		"status": "joined",
+	// 通知新玩家加入
+	broadcastMessage(roomID, response.BroadcastBehave{
+		Code:   response.NEW_PLAYER_ENTER,
+		Event:  "create and enter new room",
+		UserID: id,
+		RoomID: roomID,
+		Score:  scores[roomID][id], // 发送当前玩家的分数
 	})
-	fmt.Printf("Client %s joined room %s\n", claims.Username, roomID)
+	fmt.Printf("Client %d joined room %s\n", id, roomID)
 
-	initScore := 0
-
+	// 监听消息
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			conn.WriteJSON(gin.H{
-				"Client": claims.Username,
-				"status": "exited",
-			})
 			break
 		}
 
-		intScore, _ := strconv.Atoi(string(message))
-		initScore += intScore
-
-		if len(rooms[roomID]) == 1 {
-			for conn := range rooms[roomID] {
-				conn.WriteJSON(gin.H{"1p": claims.UserID})
-			}
-		} else if len(rooms[roomID]) == 2 {
-			for conn := range rooms[roomID] {
-				conn.WriteJSON(gin.H{
-					"1p": claims.UserID,
-					"2p": "exists",
-				})
-			}
+		// 解析得分
+		intScore, err := strconv.Atoi(string(message))
+		if err != nil {
+			fmt.Println("Invalid score received:", err)
+			continue
 		}
-		BroadcastToRoom(roomID, initScore, claims.UserID)
+
+		// 更新玩家分数
+		roomsLock.Lock()
+		scores[roomID][id] += intScore
+		updatedScore := scores[roomID][id]
+		roomsLock.Unlock()
+
+		// 广播新的得分
+		broadcastMessage(roomID, response.BroadcastBehave{
+			Code:   response.UPDATE_SCORE,
+			Event:  "update score",
+			UserID: id,
+			RoomID: roomID,
+			Score:  updatedScore, // 发送更新后的分数
+		})
+	}
+
+	// 处理玩家退出
+	roomsLock.Lock()
+	delete(rooms[roomID], conn)
+	delete(scores[roomID], id) // 移除玩家分数
+	isRoomEmpty := len(rooms[roomID]) == 0
+	roomsLock.Unlock()
+
+	// 通知其他玩家该用户已退出
+	broadcastMessage(roomID, response.BroadcastBehave{
+		Code:   response.PLAYER_EXIT,
+		Event:  "player exited",
+		UserID: id,
+		RoomID: roomID,
+	})
+
+	// 如果房间没人了，删除房间
+	if isRoomEmpty {
+		roomsLock.Lock()
+		delete(rooms, roomID)
+		delete(scores, roomID) // 删除房间分数数据
+		roomsLock.Unlock()
+		fmt.Printf("Room %s is now empty and deleted\n", roomID)
 	}
 }
 
-func BroadcastToRoom(roomID string, score int, userID int) {
+func broadcastMessage(roomID string, message response.BroadcastBehave) {
 	roomsLock.Lock()
 	defer roomsLock.Unlock()
 
 	for conn := range rooms[roomID] {
-		if err := conn.WriteJSON(gin.H{
-			"userID": userID,
-			"score":  strconv.Itoa(score),
-		}); err != nil {
-			fmt.Println("Failed to send score:", err)
+		if err := conn.WriteJSON(message); err != nil {
+			fmt.Println("Failed to send message:", err)
 			conn.Close()
 			delete(rooms[roomID], conn)
 		}

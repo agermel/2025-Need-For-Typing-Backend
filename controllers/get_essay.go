@@ -19,7 +19,7 @@ import (
 // @Tags 文章, SSE, gRPC
 // @Accept json
 // @Produce text/event-stream
-// @Param user body essayVerify true "用户注册信息"
+// @Param topic query string true "生成文章的主题"
 // @Success 200 {object} response.Response "通信成功（通过code来判断具体情况）"
 // @Router /api/essay [get]
 func (uc *UserController) GetGeneratedEssay(c *gin.Context) {

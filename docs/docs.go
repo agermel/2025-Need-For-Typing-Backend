@@ -115,7 +115,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/assetS": {
+        "/api/asset": {
             "get": {
                 "description": "根据传入的 asset_id 查询素材的 file_id",
                 "consumes": [
@@ -160,7 +160,7 @@ const docTemplate = `{
             }
         },
         "/api/essay": {
-            "post": {
+            "get": {
                 "description": "根据传入的 topic 参数，通过 gRPC 流式调用生成文章，并使用 SSE 向前端实时推送生成结果",
                 "consumes": [
                     "application/json"
@@ -176,13 +176,11 @@ const docTemplate = `{
                 "summary": "获取生成的文章",
                 "parameters": [
                     {
-                        "description": "用户注册信息",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.essayVerify"
-                        }
+                        "type": "string",
+                        "description": "生成文章的主题",
+                        "name": "topic",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -196,7 +194,7 @@ const docTemplate = `{
             }
         },
         "/api/get_upload_token": {
-            "post": {
+            "get": {
                 "description": "验证用户令牌并返回上传令牌",
                 "consumes": [
                     "application/json"
@@ -270,6 +268,53 @@ const docTemplate = `{
                         "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/scores": {
+            "get": {
+                "description": "根据传入的 song_id 查询该歌曲所有的总分记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "分数"
+                ],
+                "summary": "获取歌曲所有总分信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "歌曲ID",
+                        "name": "song_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "通信成功（通过code来判断具体情况）",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.ScoreReponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -365,9 +410,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/scores": {
+        "/api/user_scores": {
             "get": {
-                "description": "根据传入的 song_id 查询该歌曲所有的总分记录",
+                "description": "根据传入的 user_id 查询该用户所有的最佳分数记录",
                 "consumes": [
                     "application/json"
                 ],
@@ -377,12 +422,12 @@ const docTemplate = `{
                 "tags": [
                     "分数"
                 ],
-                "summary": "获取歌曲所有总分信息",
+                "summary": "获取用户所有最佳成绩",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "歌曲ID",
-                        "name": "song_id",
+                        "description": "用户ID",
+                        "name": "user_id",
                         "in": "query",
                         "required": true
                     }
@@ -391,7 +436,22 @@ const docTemplate = `{
                     "200": {
                         "description": "通信成功（通过code来判断具体情况）",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/response.ScoreReponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -498,7 +558,7 @@ const docTemplate = `{
             }
         },
         "/user/reset_password": {
-            "post": {
+            "get": {
                 "description": "用户通过邮件中提供的 token 进行密码重置",
                 "consumes": [
                     "application/json"
@@ -614,38 +674,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/user_scores": {
-            "get": {
-                "description": "根据传入的 user_id 查询该用户所有的最佳分数记录",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "分数"
-                ],
-                "summary": "获取用户所有最佳成绩",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "用户ID",
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "通信成功（通过code来判断具体情况）",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -653,17 +681,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.essayVerify": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string"
-                },
-                "topic": {
                     "type": "string"
                 }
             }
@@ -730,16 +747,10 @@ const docTemplate = `{
         "request.ScoreRequest": {
             "type": "object",
             "properties": {
-                "game_id": {
-                    "type": "integer"
-                },
-                "id": {
+                "song_id": {
                     "type": "integer"
                 },
                 "total_score": {
-                    "type": "integer"
-                },
-                "user_id": {
                     "type": "integer"
                 }
             }
@@ -782,6 +793,26 @@ const docTemplate = `{
                 },
                 "data": {},
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ScoreReponse": {
+            "type": "object",
+            "properties": {
+                "score": {
+                    "type": "integer"
+                },
+                "song_title": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
                     "type": "string"
                 }
             }

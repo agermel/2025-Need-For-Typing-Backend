@@ -56,9 +56,7 @@ func RegisterRoutes(
 	})
 
 	// 进入不同房间
-	r.GET("/ws", func(c *gin.Context) {
-		controllers.HandleWebSocket(c)
-	})
+	r.GET("/ws", middlewares.JWTAuthMiddleware(), controllers.HandleWebSocket)
 
 	return r
 }
