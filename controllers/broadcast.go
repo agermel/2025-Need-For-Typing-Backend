@@ -27,6 +27,7 @@ var (
 
 func HandleWebSocket(c *gin.Context) {
 	token := c.Query("token")
+	fmt.Println(token)
 
 	claims, err := utils.ParseToken(token)
 	if err != nil {
@@ -42,7 +43,7 @@ func HandleWebSocket(c *gin.Context) {
 		for len(rooms[roomID]) >= 2 {
 			roomID = utils.GenerateRoomID()
 		}
-		c.Redirect(http.StatusFound, fmt.Sprintf("/ws?room_id=%s", roomID))
+		c.Redirect(http.StatusFound, fmt.Sprintf("/ws?room_id=%s&token=%s", roomID, token))
 		return
 	}
 
