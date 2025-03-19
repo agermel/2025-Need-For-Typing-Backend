@@ -26,17 +26,15 @@ var (
 )
 
 func HandleWebSocket(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		response.FailWithMessage("Token Error", c)
+	token := c.Query("token")
+
+	claims, err := utils.ParseToken(token)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
 		return
 	}
 
-	id, ok := userID.(int)
-	if !ok {
-		response.FailWithMessage("userID 断言失败", c)
-		return
-	}
+	id := claims.UserID
 
 	roomID := c.Query("room_id")
 	if roomID == "" {
