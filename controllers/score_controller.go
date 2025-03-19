@@ -97,11 +97,10 @@ func (sc *ScoreController) GetAllTotalScores(c *gin.Context) {
 // @Tags 分数
 // @Accept json
 // @Produce json
-// @Param user_id query string true "用户ID"
 // @Success 200 {object} response.Response{data=[]response.ScoreReponse} "通信成功（通过code来判断具体情况）"
 // @Router /api/user_scores [get]
 func (sc *ScoreController) GetUserAllScores(c *gin.Context) {
-	userID := c.Query("user_id")
+	userID := c.GetString("userID")
 	if userID == "" {
 		response.FailWithMessage("missing user_id", c)
 		return

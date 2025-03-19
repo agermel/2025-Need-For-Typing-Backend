@@ -193,6 +193,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/get_context": {
+            "get": {
+                "description": "根据问题的标题获取其内容",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "问题"
+                ],
+                "summary": "根据标题获取内容",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "问题标题",
+                        "name": "title",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/get_list": {
+            "get": {
+                "description": "获取所有问题的标题列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "问题"
+                ],
+                "summary": "获取问题标题列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/get_upload_token": {
             "get": {
                 "description": "验证用户令牌并返回上传令牌",
@@ -234,6 +289,40 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/save_question": {
+            "post": {
+                "description": "保存一个包含标题和内容的问题",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "问题"
+                ],
+                "summary": "保存问题",
+                "parameters": [
+                    {
+                        "description": "问题数据",
+                        "name": "question",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Question"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -423,15 +512,6 @@ const docTemplate = `{
                     "分数"
                 ],
                 "summary": "获取用户所有最佳成绩",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "用户ID",
-                        "name": "user_id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "通信成功（通过code来判断具体情况）",
@@ -698,6 +778,17 @@ const docTemplate = `{
                 },
                 "name": {
                     "description": "资源名称",
+                    "type": "string"
+                }
+            }
+        },
+        "models.Question": {
+            "type": "object",
+            "properties": {
+                "context": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }

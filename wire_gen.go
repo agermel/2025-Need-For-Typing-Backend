@@ -28,7 +28,10 @@ func InitApp() App {
 	assetDAOInterface := dao.NewAssetDAO()
 	assetServiceInterface := service.NewAssetService(assetDAOInterface)
 	assetController := controllers.NewAssetController(assetServiceInterface)
-	engine := routes.RegisterRoutes(scoreController, userController, songController, assetController)
+	questionDAOInterface := dao.NewQDAO()
+	questionServiceInterface := service.NewQuestionService(questionDAOInterface)
+	questionController := controllers.NewQuestionController(questionServiceInterface)
+	engine := routes.RegisterRoutes(scoreController, userController, songController, assetController, questionController)
 	app := NewApp(engine)
 	return app
 }

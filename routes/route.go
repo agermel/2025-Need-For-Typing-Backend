@@ -13,6 +13,7 @@ func RegisterRoutes(
 	userController *controllers.UserController,
 	songController *controllers.SongController,
 	assetController *controllers.AssetController,
+	questionController *controllers.QuestionController,
 ) *gin.Engine {
 	r := gin.Default()
 	r.Use(middlewares.CORSMiddleware())
@@ -42,6 +43,10 @@ func RegisterRoutes(
 		api.GET("/scores", scoreController.GetAllTotalScores)
 		api.GET("/user_scores", scoreController.GetUserAllScores)
 		api.GET("/essay", userController.GetGeneratedEssay)
+
+		api.POST("/save_question", questionController.SaveQuestion)
+		api.GET("/get_context", questionController.GetContent)
+		api.GET("/get_list", questionController.GetTitleList)
 	}
 
 	// 加载测试用HTML

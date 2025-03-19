@@ -28,7 +28,7 @@ func InitDatabase() {
 		panic("failed to connect database")
 	}
 
-	DB.AutoMigrate(&models.User{}, &models.TotalScore{}, &models.Song{}, &models.Asset{})
+	DB.AutoMigrate(&models.User{}, &models.TotalScore{}, &models.Song{}, &models.Asset{}, &models.Question{})
 }
 
 func CloseDatabase() {

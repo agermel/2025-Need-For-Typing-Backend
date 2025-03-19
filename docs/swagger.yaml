@@ -16,6 +16,13 @@ definitions:
         description: 资源名称
         type: string
     type: object
+  models.Question:
+    properties:
+      context:
+        type: string
+      title:
+        type: string
+    type: object
   models.Song:
     properties:
       file_id:
@@ -222,6 +229,42 @@ paths:
       - 文章
       - SSE
       - gRPC
+  /api/get_context:
+    get:
+      consumes:
+      - application/json
+      description: 根据问题的标题获取其内容
+      parameters:
+      - description: 问题标题
+        in: query
+        name: title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 根据标题获取内容
+      tags:
+      - 问题
+  /api/get_list:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有问题的标题列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取问题标题列表
+      tags:
+      - 问题
   /api/get_upload_token:
     get:
       consumes:
@@ -249,6 +292,28 @@ paths:
       summary: 获取上传令牌
       tags:
       - 上传
+  /api/save_question:
+    post:
+      consumes:
+      - application/json
+      description: 保存一个包含标题和内容的问题
+      parameters:
+      - description: 问题数据
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/models.Question'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 保存问题
+      tags:
+      - 问题
   /api/score:
     post:
       consumes:
@@ -360,12 +425,6 @@ paths:
       consumes:
       - application/json
       description: 根据传入的 user_id 查询该用户所有的最佳分数记录
-      parameters:
-      - description: 用户ID
-        in: query
-        name: user_id
-        required: true
-        type: string
       produces:
       - application/json
       responses:
