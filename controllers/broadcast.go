@@ -43,7 +43,13 @@ func HandleWebSocket(c *gin.Context) {
 		for len(rooms[roomID]) >= 2 {
 			roomID = utils.GenerateRoomID()
 		}
-		c.Redirect(http.StatusFound, fmt.Sprintf("/ws?room_id=%s&token=%s", roomID, token))
+		broadcastMessage(roomID, response.BroadcastBehave{
+			Code:   response.ROOM_CREATED,
+			Event:  "create and enter new room",
+			UserID: id,
+			RoomID: roomID,
+			Score:  scores[roomID][id], // 发送当前玩家的分数
+		})
 		return
 	}
 
@@ -73,7 +79,7 @@ func HandleWebSocket(c *gin.Context) {
 	// 通知新玩家加入
 	broadcastMessage(roomID, response.BroadcastBehave{
 		Code:   response.NEW_PLAYER_ENTER,
-		Event:  "create and enter new room",
+		Event:  "enter room",
 		UserID: id,
 		RoomID: roomID,
 		Score:  scores[roomID][id], // 发送当前玩家的分数

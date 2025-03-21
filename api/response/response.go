@@ -65,6 +65,7 @@ const (
 	SUCCESS          = 1
 	NEW_PLAYER_ENTER = 30001
 	PLAYER_EXIT      = 30002
+	ROOM_CREATED     = 30003
 	UPDATE_SCORE     = 20001
 )
 
