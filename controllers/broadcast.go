@@ -50,7 +50,6 @@ func HandleWebSocket(c *gin.Context) {
 			RoomID: roomID,
 			Score:  scores[roomID][id], // 发送当前玩家的分数
 		})
-		return
 	}
 
 	if len(rooms[roomID]) >= 2 {
