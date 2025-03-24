@@ -83,15 +83,16 @@ func HandleWebSocket(c *gin.Context) {
 			RoomID: roomID,
 			Score:  scores[roomID][id], // 发送当前玩家的分数
 		})
+	} else {
+		// 通知新玩家加入
+		broadcastMessage(roomID, response.BroadcastBehave{
+			Code:   response.NEW_PLAYER_ENTER,
+			Event:  "enter room",
+			UserID: id,
+			RoomID: roomID,
+			Score:  scores[roomID][id], // 发送当前玩家的分数
+		})
 	}
-	// 通知新玩家加入
-	broadcastMessage(roomID, response.BroadcastBehave{
-		Code:   response.NEW_PLAYER_ENTER,
-		Event:  "enter room",
-		UserID: id,
-		RoomID: roomID,
-		Score:  scores[roomID][id], // 发送当前玩家的分数
-	})
 	fmt.Printf("Client %d joined room %s\n", id, roomID)
 
 	// 监听消息
