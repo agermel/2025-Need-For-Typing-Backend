@@ -75,6 +75,15 @@ func HandleWebSocket(c *gin.Context) {
 	}
 	roomsLock.Unlock()
 
+	if len(rooms[roomID]) == 1 {
+		broadcastMessage(roomID, response.BroadcastBehave{
+			Code:   response.ROOM_CREATED,
+			Event:  "create and enter new room",
+			UserID: id,
+			RoomID: roomID,
+			Score:  scores[roomID][id], // 发送当前玩家的分数
+		})
+	}
 	// 通知新玩家加入
 	broadcastMessage(roomID, response.BroadcastBehave{
 		Code:   response.NEW_PLAYER_ENTER,
