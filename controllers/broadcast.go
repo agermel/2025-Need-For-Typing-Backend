@@ -52,7 +52,7 @@ func HandleWebSocket(c *gin.Context) {
 		})
 	}
 
-	if len(rooms[roomID]) >= 2 {
+	if len(rooms[roomID]) > 2 {
 		response.FailWithMessage("Room is full", c)
 		return
 	}
