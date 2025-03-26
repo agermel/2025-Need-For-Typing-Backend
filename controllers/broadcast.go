@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"sync"
 
 	"type/api/response"
@@ -102,27 +101,7 @@ func HandleWebSocket(c *gin.Context) {
 			break
 		}
 
-		// 解析得分
-		intScore, err := strconv.Atoi(string(message))
-		if err != nil {
-			fmt.Println("Invalid score received:", err)
-			continue
-		}
-
-		// 更新玩家分数
-		roomsLock.Lock()
-		scores[roomID][id] += intScore
-		updatedScore := scores[roomID][id]
-		roomsLock.Unlock()
-
-		// 广播新的得分
-		broadcastMessage(roomID, response.BroadcastBehave{
-			Code:   response.UPDATE_SCORE,
-			Event:  "update score",
-			UserID: id,
-			RoomID: roomID,
-			Score:  updatedScore, // 发送更新后的分数
-		})
+		broadcastMessage(roomID, message)
 	}
 
 	// 处理玩家退出
@@ -150,7 +129,7 @@ func HandleWebSocket(c *gin.Context) {
 	}
 }
 
-func broadcastMessage(roomID string, message response.BroadcastBehave) {
+func broadcastMessage(roomID string, message interface{}) {
 	roomsLock.Lock()
 	defer roomsLock.Unlock()
 
