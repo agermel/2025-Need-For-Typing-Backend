@@ -101,7 +101,7 @@ func HandleWebSocket(c *gin.Context) {
 			break
 		}
 
-		broadcastMessage(roomID, message)
+		broadcastMessage(roomID,string(message))
 	}
 
 	// 处理玩家退出

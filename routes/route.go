@@ -59,6 +59,9 @@ func RegisterRoutes(
 	r.GET("/upload_song", func(c *gin.Context) {
 		utils.ServeHTML(c.Writer, c.Request, "template\\upload.html")
 	})
+	r.GET(("/reset"), func(c *gin.Context) {
+		utils.ServeHTML(c.Writer, c.Request, "template\\reset.html")
+	})
 
 	// 进入不同房间
 	r.GET("/ws", controllers.HandleWebSocket)

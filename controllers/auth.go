@@ -38,7 +38,7 @@ func SendVerificationCode(c *gin.Context) {
 		return
 	}
 
-	if err := utils.SendMail(email, "This is your verifing code not junk !!!", code); err != nil {
+	if err := utils.SendMail(email, "Need for Typing account verification", code, "controllers/封面.png"); err != nil {
 		response.FailWithMessage("Failed to send email"+err.Error(), c)
 		return
 	}

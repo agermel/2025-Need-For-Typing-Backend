@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重置密码</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get("token");
+            const email = urlParams.get("email");
+
+            if (!token || !email) {
+                alert("链接无效或缺少必要参数");
+                return;
+            }
+
+            document.getElementById("submit").addEventListener("click", async function () {
+                const newPassword = document.getElementById("newPassword").value;
+                const confirmPassword = document.getElementById("confirmPassword").value;
+                
+                if (newPassword.length < 6) {
+                    alert("密码长度不能少于6位");
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    alert("两次输入的密码不一致");
+                    return;
+                }
+
+                const resetUrl = `https://thusdaykfcv50.top/reset_password?token=${token}&email=${email}&new_password=${encodeURIComponent(newPassword)}`;
+                
+                try {
+                    const response = await fetch(resetUrl);
+                    const result = await response.json();
+                    
+                    if (result.code === 1) {
+                        alert("密码重置成功，正在跳转...");
+                        window.location.href = "https://thusdaykfcv50.top";
+                    } else {
+                        alert("密码重置失败: " + (result.message || "未知错误"));
+                    }
+                } catch (error) {
+                    alert("请求失败，请检查网络连接");
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h2>重置密码</h2>
+    <label for="newPassword">新密码:</label>
+    <input type="password" id="newPassword" required>
+    <br>
+    <label for="confirmPassword">重复密码:</label>
+    <input type="password" id="confirmPassword" required>
+    <br>
+    <button id="submit">确认</button>
+</body>
+</html>

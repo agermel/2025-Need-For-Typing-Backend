@@ -14,8 +14,8 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 class GenerateService(llm_pb2_grpc.GenerateServicer):
-    def GenerateStream(self,request,context):
-        prompt = f"please write an essay about {request.topic} for 200 words in one paragraph. The generate response can only include one paragraph."
+    def GenerateStream(self, request, context):
+        prompt = f"please write an essay about {request.topic} for 200 words in one paragraph without any other markdown or format characters"
         llm = ChatOpenAI(
             model="deepseek-chat",
             openai_api_key=config("OPENAI_API_KEY"),
@@ -28,6 +28,7 @@ class GenerateService(llm_pb2_grpc.GenerateServicer):
         for chunk in llm.stream([{"role": "user", "content": prompt}]):
             full_response += chunk.content
             yield llm_pb2.GenerateResponse(response=full_response)
+
 
 
 def serve():

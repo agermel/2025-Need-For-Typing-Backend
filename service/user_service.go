@@ -103,8 +103,8 @@ func (us *UserService) RequestPasswordReset(email string) error {
 		return errors.New("保存密码重置信息失败")
 	}
 
-	resetLink := "https://thusdaykfcv50.top/reset_password?token=" + token + "&email=" + user.Email
-	err = utils.SendMail(user.Email, "邮箱验证", "点击修改密码"+resetLink)
+	resetLink := "https://thusdaykfcv50.top/user/reset_password?token=" + token + "&email=" + user.Email
+	err = utils.SendMail(user.Email, "邮箱验证", "点击修改密码"+resetLink, "controllers/封面.png")
 	if err != nil {
 		return errors.New("发送重置邮件失败")
 	}
